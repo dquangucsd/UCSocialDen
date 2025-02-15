@@ -73,6 +73,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* Create event modal */}
       <Modal
+        animationType="slide"
         transparent={true}
         visible={isCreateEventFormVisible}
         onRequestClose={() => setIsCreateEventFormVisible(false)}

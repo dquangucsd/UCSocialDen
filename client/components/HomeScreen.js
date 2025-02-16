@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, useWindowDimensions } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS, MOCK_EVENTS } from '../utils/constants';
 import { useCalendar } from '../hooks/useCalendar';
@@ -69,6 +69,28 @@ export default function HomeScreen() {
   const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  const { width } = useWindowDimensions();
+  const isMobile = width <= 430;
+
+  // Calculate responsive sizes
+  const getPadding = () => {
+    if (width <= 320) return 4; // Very small phones
+    if (width <= 430) return 6; // Regular phones
+    return 8; // Tablets and larger
+  };
+
+  const getButtonStyle = () => ({
+    paddingVertical: getPadding(),
+    paddingHorizontal: getPadding() * 2,
+    borderRadius: isMobile ? 12 : 16,
+  });
+
+  const getFontSize = () => {
+    if (width <= 320) return 12;
+    if (width <= 430) return 14;
+    return 16;
+  };
+
   return (
     <View style={styles.container}>
       {/* Create event modal */}
@@ -96,28 +118,41 @@ export default function HomeScreen() {
         <Sidebar />
         
         {/* Events Section */}
-        <View style={styles.eventSection}>
+        <View style={[styles.eventSection, { padding: getPadding() * 2 }]}>
           {/* Filters */}
-          <View style={styles.filterContainer}>
-            <View style={styles.filterButtons}>
-              <TouchableOpacity style={[styles.filterButton, styles.activeFilter]}>
-                <Text style={styles.filterText}>Today</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>Tomorrow</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>Date...</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.rightButtons}>
-              <TouchableOpacity style={styles.filterDropdown}>
-                <Text style={styles.filterText}>Filter</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.addEventButton} onPress={() => setIsCreateEventFormVisible(true)}>
-                <Text style={styles.filterText}>Add Event</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={[styles.filterContainer, { marginBottom: getPadding() * 2 }]}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={[styles.filterScrollView, { marginRight: getPadding() }]}
+            >
+              <View style={[styles.filterButtons, { gap: getPadding() }]}>
+                <TouchableOpacity 
+                  style={[
+                    styles.filterButton, 
+                    styles.activeFilter,
+                    getButtonStyle(),
+                  ]}
+                >
+                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Today</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.filterButton, getButtonStyle()]}>
+                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Tomorrow</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.filterButton, getButtonStyle()]}>
+                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Date...</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.filterButton, getButtonStyle()]}>
+                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Filter</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+            <TouchableOpacity 
+              style={[styles.addEventButton, getButtonStyle()]}
+              onPress={() => setIsCreateEventFormVisible(true)}
+            >
+              <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Add</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Event Cards */}
@@ -145,38 +180,30 @@ const styles = StyleSheet.create({
   },
   eventSection: {
     flex: 1,
-    padding: 16,
   },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+  },
+  filterScrollView: {
+    flex: 1,
   },
   filterButtons: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  rightButtons: {
-    flexDirection: 'row',
-    gap: 8,
   },
   filterButton: {
     backgroundColor: COLORS.periwinkle,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
   },
   activeFilter: {
     backgroundColor: COLORS.indigo,
   },
   addEventButton: {
     backgroundColor: COLORS.brightSun,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
   },
   filterText: {
     color: '#FFFFFF',
+    fontWeight: '500',
   },
   eventCard: {
     backgroundColor: '#E5E7EB',
@@ -220,12 +247,6 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 4,
     marginVertical: 8,
-  },
-  filterDropdown: {
-    backgroundColor: COLORS.periwinkle,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
   },
 });
 

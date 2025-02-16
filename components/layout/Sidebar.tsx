@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
 import { useCalendar } from '../../hooks/useCalendar';
@@ -9,7 +9,7 @@ export default function Sidebar() {
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
 
-  // Don't render the sidebar at all if mobile and not open
+  // Don't render the main sidebar at all if mobile and not open
   if (isMobile && !isOpen) {
     return (
       <TouchableOpacity 
@@ -22,45 +22,40 @@ export default function Sidebar() {
   }
 
   return (
-    <>
-      {isMobile && isOpen && (
-        <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
+    <View style={[
+      styles.sidebar,
+      isMobile && styles.sidebarMobile
+    ]}>
+      {isMobile && (
+        <TouchableOpacity 
+          style={styles.closeButton}
+          onPress={() => setIsOpen(false)}
+        >
+          <Text style={styles.closeText}>×</Text>
+        </TouchableOpacity>
       )}
+
+      <Text style={styles.sidebarTitle}>Your Events</Text>
+      {['Name', 'Name', 'Name', 'Name', 'Name', 'Name'].map((item, index) => (
+        <TouchableOpacity key={index} style={styles.sidebarItem}>
+          <Text style={styles.sidebarText}>{item}</Text>
+        </TouchableOpacity>
+      ))}
       
-      <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
-        <Text style={styles.sidebarTitle}>Your Events</Text>
-        {['Name', 'Name', 'Name', 'Name', 'Name', 'Name'].map((item, index) => (
-          <TouchableOpacity key={index} style={styles.sidebarItem}>
-            <Text style={styles.sidebarText}>{item}</Text>
+      <View style={styles.calendarSection}>
+        <View style={styles.calendarHeader}>
+          <Text style={styles.sidebarTitle}>Your Calendar</Text>
+          <TouchableOpacity style={styles.todayButton}>
+            <Text style={styles.todayButtonText}>Today</Text>
           </TouchableOpacity>
-        ))}
-        
-        <View style={styles.calendarSection}>
-          <View style={styles.calendarHeader}>
-            <Text style={styles.sidebarTitle}>Your Calendar</Text>
-            <TouchableOpacity style={styles.todayButton}>
-              <Text style={styles.todayButtonText}>Today</Text>
-            </TouchableOpacity>
-          </View>
-          <Calendar />
         </View>
+        <Calendar />
       </View>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 999,
-  },
   sidebar: {
     width: 280,
     backgroundColor: '#F3F4F6',
@@ -87,6 +82,16 @@ const styles = StyleSheet.create({
   toggleText: {
     color: '#FFFFFF',
     fontSize: 24,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    padding: 5,
+  },
+  closeText: {
+    fontSize: 24,
+    color: '#000000',
   },
   sidebarTitle: {
     color: '#111827',

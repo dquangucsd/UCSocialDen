@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, TouchableWithoutFeedback } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
 import { useCalendar } from '../../hooks/useCalendar';
@@ -9,7 +9,7 @@ export default function Sidebar() {
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
 
-  // Don't render the sidebar at all if mobile and not open
+  // Don't render the main sidebar at all if mobile and not open
   if (isMobile && !isOpen) {
     return (
       <TouchableOpacity 

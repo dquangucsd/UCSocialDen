@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { Calendar } from 'react-native-calendars';
@@ -16,6 +16,14 @@ export default function CreateEventForm(props: CreateEventFormProps) {
 
     const styles = isDesktop ? stylesDesktop : stylesMobile;
 
+    // save form values
+    const [title, setTitle] = useState("");
+    const [occupancy, setOccupancy] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
+    const [location, setLocation] = useState("");
+    const [description, setDescription] = useState("");
+
     const {
         currentMonth,
         selectedDate,
@@ -26,6 +34,20 @@ export default function CreateEventForm(props: CreateEventFormProps) {
         goToToday,
       } = useCalendar([]);
 
+    const submitCreateEventForm = () => {
+        const event = {
+            id: "",
+            title: title,
+            category: "",
+            start: startTime,
+            end: endTime,
+            location: location,
+            description: description
+        };
+
+        props.setIsCreateEventFormVisible(false);
+    }
+
     return (
         <View style={styles.background}>
             <View style={styles.container}>
@@ -35,13 +57,18 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                             style={styles.title} 
                             placeholder="Event Name" 
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                            value={title}
+                            onChangeText={setTitle}
                         />
                     </View>
                     <View style={styles.occupancyContainer}>
                         <TextInput 
                             style={styles.occupancy} 
+                            inputMode="numeric"
                             placeholder="000"
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                            value={occupancy}
+                            onChangeText={setOccupancy}
                         />
                         <Image style={styles.personIcon} source={require("../assets/images/person-icon.png")}/>
                     </View>
@@ -52,6 +79,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                             style={styles.date} 
                             placeholder="00/00 00:00am"
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                            value={startTime}
+                            onChangeText={setStartTime}
                         />
                         <TouchableOpacity >
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
@@ -62,6 +91,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                             style={styles.date} 
                             placeholder="00/00 00:00pm"
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                            value={endTime}
+                            onChangeText={setEndTime}
                         />
                         <TouchableOpacity >
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
@@ -73,6 +104,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                         style={styles.location} 
                         placeholder="Somewhere, Someplace"
                         placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                        value={location}
+                        onChangeText={setLocation}
                     />
                     <TouchableOpacity>
                         <Image style={styles.mapsIcon} source={require("../assets/images/maps-icon.png")} />
@@ -87,13 +120,15 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                         placeholder="Description..." 
                         placeholderTextColor="rgba(0, 0, 0, 0.5)"
                         multiline={true}
+                        value={description}
+                        onChangeText={setDescription}
                     />
                 </View>
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={() => props.setIsCreateEventFormVisible(false)}>
                         <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.createButton}>
+                    <TouchableOpacity style={styles.createButton} onPress={() => submitCreateEventForm()}>
                         <Text style={styles.buttonText}>Create</Text>
                     </TouchableOpacity>
                 </View>
@@ -355,7 +390,7 @@ const stylesDesktop = StyleSheet.create({
         padding: 10
     },
     description: {
-        fontSize: 16,
+        fontSize: 22,
         fontFamily: "'Zain', sans-serif"
     },
     buttonsContainer: {
@@ -381,7 +416,7 @@ const stylesDesktop = StyleSheet.create({
         alignItems: "center"
     },
     buttonText: {
-        fontSize: 16,
+        fontSize: 22,
         fontFamily: "'Zain', sans-serif",
         color: COLORS.alabaster
     }

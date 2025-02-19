@@ -1,148 +1,92 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, TouchableWithoutFeedback } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
 import { useCalendar } from '../../hooks/useCalendar';
 
 export default function Sidebar() {
-  const {
-    currentMonth,
-    selectedDate,
-    markedDates,
-    calendarRef,
-    setCurrentMonth,
-    setSelectedDate,
-    goToToday,
-  } = useCalendar([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const { width } = useWindowDimensions();
+  const isMobile = width <= 430;
+
+  // Don't render the main sidebar at all if mobile and not open
+  if (isMobile && !isOpen) {
+    return (
+      <TouchableOpacity 
+        style={styles.toggleButton}
+        onPress={() => setIsOpen(true)}
+      >
+        <Text style={styles.toggleText}>☰</Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
-    <View style={styles.sidebar}>
-      <Text style={styles.sidebarTitle}>Your Events</Text>
-      {['Name', 'Name', 'Name', 'Name', 'Name', 'Name'].map((item, index) => (
-        <TouchableOpacity key={index} style={styles.sidebarItem}>
-          <Text style={styles.sidebarText}>{item}</Text>
-        </TouchableOpacity>
-      ))}
-      <View style={styles.calendarSection}>
-        <View style={styles.calendarSectionHeader}>
-          <Text style={[styles.sidebarTitle, { marginTop: 20 }]}>Your Calendar</Text>
-          <TouchableOpacity 
-            style={styles.todayButton}
-            onPress={goToToday}
-          >
-            <Text style={styles.todayButtonText}>Today</Text>
+    <>
+      {isMobile && isOpen && (
+        <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+      )}
+      
+      <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
+        <Text style={styles.sidebarTitle}>Your Events</Text>
+        {['Name', 'Name', 'Name', 'Name', 'Name', 'Name'].map((item, index) => (
+          <TouchableOpacity key={index} style={styles.sidebarItem}>
+            <Text style={styles.sidebarText}>{item}</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.calendarContainer}>
-          <Calendar
-            ref={calendarRef}
-            current={currentMonth}
-            markedDates={markedDates}
-            onDayPress={day => setSelectedDate(day.dateString)}
-            onMonthChange={(month) => {
-              setCurrentMonth(month.dateString);
-            }}
-            theme={{
-              calendarBackground: 'transparent',
-              monthTextColor: '#000000',
-              dayTextColor: '#000000',
-              textDisabledColor: '#CCCCCC',
-              selectedDayBackgroundColor: COLORS.brightSun,
-              selectedDayTextColor: '#000000',
-              todayTextColor: '#FFFFFF',
-              arrowColor: '#666666',
-              textMonthFontSize: 16,
-              textDayFontSize: 14,
-              textDayHeaderFontSize: 12,
-              'stylesheet.calendar.header': {
-                header: {
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                },
-                monthText: {
-                  fontSize: 16,
-                  fontWeight: '600',
-                  color: '#000000',
-                  letterSpacing: 2,
-                },
-                arrow: {
-                  padding: 10,
-                  width: 30,
-                  height: 30,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-                week: {
-                  marginTop: 5,
-                  marginHorizontal: 10,
-                  flexDirection: 'row',
-                  justifyContent: 'space-around',
-                },
-                dayHeader: {
-                  marginTop: 2,
-                  marginBottom: 4,
-                  width: 30,
-                  textAlign: 'center',
-                  fontSize: 12,
-                  color: '#666666',
-                  fontWeight: '500',
-                  ...(day => day === 'Sun' ? { fontSize: 10 } : {}),
-                }
-              },
-              'stylesheet.calendar.main': {
-                week: {
-                  marginHorizontal: 10,
-                  flexDirection: 'row',
-                  justifyContent: 'space-around',
-                  marginTop: 2,
-                  marginBottom: 2,
-                },
-                dayContainer: {
-                  flex: 1,
-                  alignItems: 'center',
-                }
-              },
-              'stylesheet.day.basic': {
-                base: {
-                  width: 30,
-                  height: 30,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-                text: {
-                  fontSize: 14,
-                  color: '#000000',
-                },
-                selected: {
-                  backgroundColor: COLORS.brightSun,
-                  borderRadius: 15,
-                },
-                today: {
-                  backgroundColor: COLORS.indigo,
-                  borderRadius: 15,
-                }
-              }
-            }}
-            monthFormat={'MMM'}
-            firstDay={0}
-            style={styles.calendar}
-          />
+        ))}
+        
+        <View style={styles.calendarSection}>
+          <View style={styles.calendarHeader}>
+            <Text style={styles.sidebarTitle}>Your Calendar</Text>
+            <TouchableOpacity style={styles.todayButton}>
+              <Text style={styles.todayButtonText}>Today</Text>
+            </TouchableOpacity>
+          </View>
+          <Calendar />
         </View>
       </View>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
+  },
   sidebar: {
     width: 280,
     backgroundColor: '#F3F4F6',
     padding: 16,
     borderRightWidth: 1,
     borderRightColor: '#E5E7EB',
+  },
+  sidebarMobile: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    height: '100%',
+    zIndex: 1000,
+  },
+  toggleButton: {
+    position: 'absolute',
+    left: 10,
+    top: '50%',
+    backgroundColor: COLORS.indigo,
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 1000,
+  },
+  toggleText: {
+    color: '#FFFFFF',
+    fontSize: 24,
   },
   sidebarTitle: {
     color: '#111827',
@@ -162,7 +106,7 @@ const styles = StyleSheet.create({
   calendarSection: {
     marginTop: 20,
   },
-  calendarSectionHeader: {
+  calendarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -178,21 +122,5 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontSize: 12,
     fontWeight: '500',
-  },
-  calendarContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  calendar: {
-    borderRadius: 20,
   },
 }); 

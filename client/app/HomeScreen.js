@@ -4,11 +4,11 @@ import { Calendar } from 'react-native-calendars';
 import { COLORS, MOCK_EVENTS } from '../utils/constants';
 import { useCalendar } from '../hooks/useCalendar';
 import { useRouter } from 'expo-router';
-import TopNavBar from './layout/TopNavBar';
-import Sidebar from './layout/Sidebar';
-import CreateEventForm from './CreateEventForm';
-import EventCard from './EventCard';
-import EventDetails from './EventDetails';
+import TopNavBar from '../components/layout/TopNavBar';
+import Sidebar from '../components/layout/Sidebar';
+import CreateEventForm from '../components/CreateEventForm';
+import EventCard from '../components/EventCard';
+import EventDetails from '../components/EventDetails';
 
 export default function HomeScreen() {
   const router = useRouter();

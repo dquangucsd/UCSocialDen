@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { COLORS } from '../../utils/constants';
 import { useRouter } from 'expo-router';
+import { Route } from 'expo-router/build/Route';
+import WelcomePage from '../../app/WelcomePage';
 
 interface TopNavBarProps {
   activeTab: string;
@@ -28,7 +30,7 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
         <View style={styles.navLinks}>
           <TouchableOpacity 
             style={styles.navLinkContainer}
-            onPress={() => router.push('/')}
+            onPress={() => router.push('/HomeScreen')}
           >
             <Text style={[
               styles.navLink,
@@ -70,6 +72,7 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
               onPress={() => {
                 console.log('Sign out clicked');
                 setIsProfileMenuOpen(false);
+                router.push('/');
               }}
             >
               <Text style={styles.profileMenuText}>Sign Out</Text>

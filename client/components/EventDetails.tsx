@@ -20,15 +20,13 @@ interface EventDetailsProps {
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
   if (!event) return null;
 
-  const joinedPeople = [
-    { id: 1, avatar: "https://via.placeholder.com/50" },
-    { id: 2, avatar: "https://via.placeholder.com/50" },
-    { id: 3, avatar: "https://via.placeholder.com/50" },
-    { id: 4, avatar: "https://via.placeholder.com/50" },
-    { id: 5, avatar: "https://via.placeholder.com/50" },
-  ];
-
-  console.log("Joined People:", joinedPeople);
+  // const joinedPeople = [
+  //   { id: 1, avatar: "https://via.placeholder.com/50" },
+  //   { id: 2, avatar: "https://via.placeholder.com/50" },
+  //   { id: 3, avatar: "https://via.placeholder.com/50" },
+  //   { id: 4, avatar: "https://via.placeholder.com/50" },
+  //   { id: 5, avatar: "https://via.placeholder.com/50" },
+  // ];
 
   return (
     <Modal visible animationType="slide" transparent>
@@ -50,25 +48,29 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             </View>
 
             {/* Event Image */}
-            {event.image && (
+            {/* {event.image && (
               <Image source={{ uri: event.image }} style={styles.eventImage} />
-            )}
+            )} */}
+
+            {/* Event Tag */}
+            <View style={styles.locationTimeContainer}>
+              <Text style={styles.eventInfo}>Category: {event.category || "Unknown Category"}</Text>
+            </View>
 
             {/* Description Box */}
-            <Text style={styles.label}>Description</Text>
             <View style={styles.descriptionBox}>
               <Text>{event.description || "No description available."}</Text>
             </View>
 
             {/* Joined People Section */}
-            <View style={styles.joinSection}>
+            {/* <View style={styles.joinSection}>
               <Text style={styles.label}>Joined people</Text>
               <View style={styles.profileContainer}>
                 {joinedPeople.map((person) => (
                   <Image key={person.id} source={{ uri: person.avatar || "https://via.placeholder.com/50"}} style={styles.profileCircle} />
                 ))}
               </View>
-            </View>
+            </View> */}
 
             {/* Join Button */}
             <TouchableOpacity style={styles.joinButton}>
@@ -169,6 +171,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
     width: width * 0.8,
+    alignSelf: "center",
   },
   buttonText: {
     color: "white",

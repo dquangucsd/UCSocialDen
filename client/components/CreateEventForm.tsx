@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { COLORS } from '../utils/constants';
-import { Calendar } from 'react-native-calendars';
-import { useCalendar } from '../hooks/useCalendar';
 import { useMediaQuery } from 'react-responsive';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 type CreateEventFormProps = {
     setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>
@@ -16,25 +15,22 @@ export default function CreateEventForm(props: CreateEventFormProps) {
 
     const styles = isDesktop ? stylesDesktop : stylesMobile;
 
+    const today = new Date(Date.now());
+    const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+
     // save form values
     const [title, setTitle] = useState("");
     const [occupancy, setOccupancy] = useState("");
+    const [startDate, setStartDate] = useState("");
     const [startTime, setStartTime] = useState("");
+    const [startAmPm, setStartAmPm] = useState("am");
+    const [endDate, setEndDate] = useState("")
     const [endTime, setEndTime] = useState("");
+    const [endAmPm, setEndAmPm] = useState("pm");
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
 
-    const {
-        currentMonth,
-        selectedDate,
-        markedDates,
-        calendarRef,
-        setCurrentMonth,
-        setSelectedDate,
-        goToToday,
-      } = useCalendar([]);
-
-    const submitCreateEventForm = () => {
+    const submitCreateEventForm = async () => {
         const event = {
             id: "",
             title: title,
@@ -75,30 +71,62 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                 </View>
                 <View style={styles.startEndContainer}>
                     <View style={styles.dateContainer}>
-                        <TextInput 
-                            style={styles.date} 
-                            placeholder="00/00 00:00am"
-                            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                            value={startTime}
-                            onChangeText={setStartTime}
-                        />
-                        <TouchableOpacity >
+                        <View style={styles.dateValueContainer}>
+                            <TextInput 
+                                style={styles.date} 
+                                placeholder="00/00"
+                                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                value={startTime}
+                                onChangeText={setStartTime}
+                            />
+                            <TextInput
+                                style={styles.time}
+                                placeholder="00:00"
+                                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                value={startDate}
+                                onChangeText={setStartDate}
+                            />
+                            <TextInput 
+                                style={styles.ampm}
+                                value={startAmPm}
+                                onChangeText={setStartAmPm}
+                            />
+                        </View>
+                        <TouchableOpacity onPress={() => setIsDateTimePickerVisible(true)}>
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.dateContainer}>
-                        <TextInput 
-                            style={styles.date} 
-                            placeholder="00/00 00:00pm"
-                            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                            value={endTime}
-                            onChangeText={setEndTime}
-                        />
+                    <View style={styles.dateValueContainer}>
+                            <TextInput 
+                                style={styles.date} 
+                                placeholder="00/00"
+                                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                value={endDate}
+                                onChangeText={setEndDate}
+                            />
+                            <TextInput
+                                style={styles.time}
+                                placeholder="00:00"
+                                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                value={endTime}
+                                onChangeText={setEndTime}
+                            />
+                            <TextInput 
+                                style={styles.ampm}
+                                value={endAmPm}
+                                onChangeText={setEndAmPm}
+                            />
+                        </View>
                         <TouchableOpacity >
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
                         </TouchableOpacity>
                     </View>
                 </View>
+                {(isDateTimePickerVisible && (Platform.OS != "web")) && <DateTimePicker
+                    value={today}
+                    mode="datetime"
+                />}
                 <View style={styles.locationContainer}>
                     <TextInput 
                         style={styles.location} 
@@ -151,128 +179,137 @@ const stylesMobile = StyleSheet.create({
         padding: 25,
         display: "flex",
         flexDirection: "column",
-        gap: 20
+        gap: 10
     },
     titleOccupancyContainer: {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
-        gap: 20
+        gap: 10
     },
     titleContainer: {
         backgroundColor: COLORS.blueGray,
-        height: 100,
-        borderRadius: 20,
+        height: 50,
+        borderRadius: 10,
         justifyContent: "center",
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         flex: 1
     },
     title: {
-        fontSize: 48,
+        fontSize: 24,
         fontFamily: "'Zain', sans-serif"
     },
     occupancyContainer: {
         backgroundColor: COLORS.blueGray,
-        height: 100,
-        width: 200,
-        borderRadius: 20,
+        height: 50,
+        width: 100,
+        borderRadius: 10,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
     },
     occupancy: {
-        fontSize: 48,
+        fontSize: 24,
         fontFamily: "'Zain', sans-serif",
-        width: 100
+        width: 50
+    },
+    personIcon: {
+        height: 25,
+        width: 25
     },
     startEndContainer: {
         display: "flex",
         flexDirection: "row",
-        gap: 20
+        gap: 10
     },
     dateContainer: {
         backgroundColor: COLORS.blueGray,
-        height: 100,
+        height: 50,
         flex: 1,
-        borderRadius: 20,
+        borderRadius: 10,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingHorizontal: 20
+        paddingHorizontal: 10
+    },
+    dateValueContainer: {
+
+    },
+    time: {
+
+    },      
+    ampm: {
+
     },
     date: {
-        fontSize: 36,
+        fontSize: 18,
         fontFamily: "'Zain', sans-serif",
-        width: 200
+        width: 125
     },
     calendarIcon: {
-        height: 50,
-        width: 50
-    },
-    personIcon: {
-        height: 50,
-        width: 50
+        height: 25,
+        width: 25
     },
     locationContainer: {
         backgroundColor: COLORS.blueGray,
-        height: 100,
-        width: 500,
-        borderRadius: 20,
-        padding: 20,
+        height: 50,
+        width: 250,
+        borderRadius: 10,
+        padding: 10,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between"
     },
     location: {
-        fontSize: 36,
-        width: 350,
+        fontSize: 18,
+        width: 200,
         fontFamily: "'Zain', sans-serif"
     },
     mapsIcon: {
-        height: 50,
-        width: 50
+        height: 25,
+        width: 25
     },
     tagsContainer: {
         backgroundColor: COLORS.brightSun,
-        height: 50,
+        height: 25,
     },
     descriptionContainer: {
         backgroundColor: COLORS.blueGray,
-        borderRadius: 20,
+        borderRadius: 10,
         flex: 1,
-        padding: 20
+        padding: 10
     },
     description: {
-        fontSize: 36,
+        fontSize: 18,
         fontFamily: "'Zain', sans-serif"
     },
     buttonsContainer: {
         display: "flex",
         flexDirection: "row",
-        gap: 20,
+        gap: 10,
         justifyContent: "flex-end"
     },
     cancelButton: {
         backgroundColor: COLORS.indigo,
-        height: 100,
-        width: 200,
-        borderRadius: 50,
+        height: 50,
+        width: 100,
+        borderRadius: 25,
         justifyContent: "center",
         alignItems: "center"
     },
     createButton: {
         backgroundColor: COLORS.indigo,
-        height: 100,
-        width: 200,
-        borderRadius: 50,
+        height: 50,
+        width: 100,
+        borderRadius: 25,
         justifyContent: "center",
         alignItems: "center"
     },
     buttonText: {
-        fontSize: 48,
+        fontSize: 24,
         fontFamily: "'Zain', sans-serif",
         color: COLORS.alabaster
     }
@@ -331,6 +368,10 @@ const stylesDesktop = StyleSheet.create({
         fontFamily: "'Zain', sans-serif",
         width: 50
     },
+    personIcon: {
+        height: 25,
+        width: 25
+    },
     startEndContainer: {
         display: "flex",
         flexDirection: "row",
@@ -339,7 +380,7 @@ const stylesDesktop = StyleSheet.create({
     dateContainer: {
         backgroundColor: COLORS.blueGray,
         height: 50,
-        width: 200,
+        width: 225,
         borderRadius: 10,
         display: "flex",
         flexDirection: "row",
@@ -347,18 +388,28 @@ const stylesDesktop = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 10
     },
+    dateValueContainer: {
+        flexDirection: "row",
+        alignItems: "center"
+    },
     date: {
         fontSize: 22,
         fontFamily: "'Zain', sans-serif",
-        width: 150
+        width: 60,
+    },
+    time: {
+        fontSize: 22,
+        fontFamily: "'Zain', sans-serif",
+        width: 50,
+    },
+    ampm: {
+        fontSize: 22,
+        fontFamily: "'Zain', sans-serif",
+        width: 50,
     },
     calendarIcon: {
         height: 25,
-        width: 25
-    },
-    personIcon: {
-        height: 25,
-        width: 25
+        width: 25,
     },
     locationContainer: {
         backgroundColor: COLORS.blueGray,

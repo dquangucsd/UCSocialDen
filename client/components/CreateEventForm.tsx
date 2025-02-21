@@ -4,6 +4,14 @@ import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+type ValidInput = {
+    isNameValid: boolean,
+    isStartDateTimeValid: boolean,
+    isEndDateTimeValid: boolean,
+    isLocationValid: boolean,
+    isParticipantLimitValid: boolean
+};
+
 type CreateEventFormProps = {
     setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>
 };
@@ -19,26 +27,83 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
 
     // save form values
-    const [title, setTitle] = useState("");
-    const [occupancy, setOccupancy] = useState("");
+    const [name, setName] = useState("");
+    const [createTime, setCreateTime] = useState("");
     const [startDate, setStartDate] = useState("");
     const [startTime, setStartTime] = useState("");
-    const [startAmPm, setStartAmPm] = useState("am");
+    // const [startAmPm, setStartAmPm] = useState("am");
     const [endDate, setEndDate] = useState("")
     const [endTime, setEndTime] = useState("");
-    const [endAmPm, setEndAmPm] = useState("pm");
+    // const [endAmPm, setEndAmPm] = useState("pm");
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
+    const [eventImage, setEventImage] = useState("");
+    const [tags, setTags] = useState([]);
+    const [participantLimit, setParticipantLimit] = useState("");
+
+    // form error checking
+    const [inputErrors, setInputErrors] = useState<ValidInput>({
+        isNameValid: true,
+        isStartDateTimeValid: true,
+        isEndDateTimeValid: true,
+        isLocationValid: true,
+        isParticipantLimitValid: true
+    });
+
+    const validateFormInput = () => {
+        const input:ValidInput = {
+            isNameValid: name != "",
+            isStartDateTimeValid: startDate.includes("/") && startTime.includes(":"),
+            isEndDateTimeValid: endDate.includes("/") && endTime.includes(":"),
+            isLocationValid: location != "",
+            isParticipantLimitValid: !Number.isNaN(+participantLimit)
+        };
+
+        console.log(input);
+
+        setInputErrors(input);
+        return (
+            input.isNameValid && 
+            input.isStartDateTimeValid && 
+            input.isEndDateTimeValid && 
+            input.isLocationValid && 
+            input.isParticipantLimitValid
+        );
+    }
 
     const submitCreateEventForm = async () => {
+        if (!validateFormInput()) return
+
+        const createTime = new Date(Date.now());
+        const startDateTime = new Date(
+            createTime.getFullYear(),
+            +startDate.split("/")[0]-1,
+            +startDate.split("/")[1],
+            +startTime.split(":")[0],
+            +startTime.split(":")[1]
+        );
+
+        const endDateTime = new Date(
+            createTime.getFullYear(),
+            +endDate.split("/")[0]-1,
+            +endDate.split("/")[1],
+            +endTime.split(":")[0],
+            +endTime.split(":")[1]
+        )
+
         const event = {
-            id: "",
-            title: title,
-            category: "",
-            start: startTime,
-            end: endTime,
+            _id: "",
+            name: name,
+            create_time: createTime,
+            start_time: startDateTime,
+            end_time: endDateTime,
             location: location,
-            description: description
+            description: description,
+            participants: [],
+            author: "",
+            event_image: "",
+            tags: tags,
+            particapant_limit: participantLimit
         };
 
         props.setIsCreateEventFormVisible(false);
@@ -47,14 +112,19 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     return (
         <View style={styles.background}>
             <View style={styles.container}>
+                {!inputErrors.isNameValid &&
+                    <Text style={styles.errorText}>
+                        * Please enter an event name
+                    </Text>
+                }
                 <View style={styles.titleOccupancyContainer}>
                     <View style={styles.titleContainer}>
                         <TextInput 
                             style={styles.title} 
                             placeholder="Event Name" 
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                            value={title}
-                            onChangeText={setTitle}
+                            value={name}
+                            onChangeText={setName}
                         />
                     </View>
                     <View style={styles.occupancyContainer}>
@@ -63,12 +133,17 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                             inputMode="numeric"
                             placeholder="000"
                             placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                            value={occupancy}
-                            onChangeText={setOccupancy}
+                            value={participantLimit}
+                            onChangeText={setParticipantLimit}
                         />
                         <Image style={styles.personIcon} source={require("../assets/images/person-icon.png")}/>
                     </View>
                 </View>
+                {!(inputErrors.isStartDateTimeValid && inputErrors.isEndDateTimeValid) && 
+                    <Text style={styles.errorText}>
+                        * Please enter date in month/day hr:min
+                    </Text>
+                }
                 <View style={styles.startEndContainer}>
                     <View style={styles.dateContainer}>
                         <View style={styles.dateValueContainer}>
@@ -76,28 +151,28 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                                 style={styles.date} 
                                 placeholder="00/00"
                                 placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                                value={startTime}
-                                onChangeText={setStartTime}
+                                value={startDate}
+                                onChangeText={setStartDate}
                             />
                             <TextInput
                                 style={styles.time}
                                 placeholder="00:00"
                                 placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                                value={startDate}
-                                onChangeText={setStartDate}
+                                value={startTime}
+                                onChangeText={setStartTime}
                             />
-                            <TextInput 
+                            {/* <TextInput 
                                 style={styles.ampm}
                                 value={startAmPm}
                                 onChangeText={setStartAmPm}
-                            />
+                            /> */}
                         </View>
                         <TouchableOpacity onPress={() => setIsDateTimePickerVisible(true)}>
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.dateContainer}>
-                    <View style={styles.dateValueContainer}>
+                        <View style={styles.dateValueContainer}>
                             <TextInput 
                                 style={styles.date} 
                                 placeholder="00/00"
@@ -112,11 +187,11 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                                 value={endTime}
                                 onChangeText={setEndTime}
                             />
-                            <TextInput 
+                            {/* <TextInput 
                                 style={styles.ampm}
                                 value={endAmPm}
                                 onChangeText={setEndAmPm}
-                            />
+                            /> */}
                         </View>
                         <TouchableOpacity >
                             <Image style={styles.calendarIcon} source={require("../assets/images/calendar-icon.png")} />
@@ -127,6 +202,11 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                     value={today}
                     mode="datetime"
                 />}
+                {!inputErrors.isLocationValid && 
+                    <Text style={styles.errorText}>
+                        * Please enter a location
+                    </Text>
+                }
                 <View style={styles.locationContainer}>
                     <TextInput 
                         style={styles.location} 
@@ -312,6 +392,11 @@ const stylesMobile = StyleSheet.create({
         fontSize: 24,
         fontFamily: "'Zain', sans-serif",
         color: COLORS.alabaster
+    },
+    errorText: {
+        fontSize: 16,
+        fontFamily: "'Zain', sans-serif",
+        color: "red"
     }
 })
 
@@ -470,5 +555,10 @@ const stylesDesktop = StyleSheet.create({
         fontSize: 22,
         fontFamily: "'Zain', sans-serif",
         color: COLORS.alabaster
+    },
+    errorText: {
+        fontSize: 16,
+        fontFamily: "'Zain', sans-serif",
+        color: "red"
     }
 })

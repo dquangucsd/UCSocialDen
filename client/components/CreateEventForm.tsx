@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform } 
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
+const SERVER_PORT = 5002; //process.env.PORT;
 
 type ValidInput = {
     isNameValid: boolean,
@@ -92,7 +93,6 @@ export default function CreateEventForm(props: CreateEventFormProps) {
         )
 
         const event = {
-            _id: "",
             name: name,
             create_time: createTime,
             start_time: startDateTime,
@@ -103,10 +103,25 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             author: "",
             event_image: "",
             tags: tags,
-            particapant_limit: participantLimit
+            participant_limit: +participantLimit
         };
 
-        props.setIsCreateEventFormVisible(false);
+        try {
+            const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(event)
+            });
+            
+            if (response.ok) {
+                alert("Success! Event created successfully!");
+                props.setIsCreateEventFormVisible(false);
+            } else {
+                alert("Error! Event creation failed, please try again later.");
+            }
+        } catch (error: any) {
+            alert("Error" + error.message);
+        }
     }
 
     return (

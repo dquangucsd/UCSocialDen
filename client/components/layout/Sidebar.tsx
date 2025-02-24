@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   toggleButton: {
     position: 'absolute',
     left: 10,
-    top: '50%',
+    bottom: '10%',
     backgroundColor: COLORS.indigo,
     padding: 10,
     borderRadius: 5,

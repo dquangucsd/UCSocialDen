@@ -9,11 +9,15 @@
 2. Start the server
 
    ```bash
-    node --env-file=config.env server
+    node start
    ```
-   Note that to avoid expose our database api in this public repo, you need to set up "server/configs/config.env" in your local:
+   To run the server as the developer mode:
+   ```bash
+    npm run dev
    ```
-   ATLAS_URI=mongodb+srv://<db_username>:<db_password>@cluster.ntiw1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster
+   Note that to avoid expose our database api in this public repo, you need to set up "server/config.env" in your local:
+   ```
+   MONGO_URI=mongodb+srv://<db_username>:<db_password>@cluster.ntiw1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster
    PORT=5050
    ```
    Replace <db_username> and <db_password> with your database username and password.

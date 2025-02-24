@@ -17,7 +17,7 @@
    ```
    Note that to avoid expose our database api in this public repo, you need to set up "server/config.env" in your local:
    ```
-   ATLAS_URI=mongodb+srv://<db_username>:<db_password>@cluster.ntiw1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster
+   MONGO_URI=mongodb+srv://<db_username>:<db_password>@cluster.ntiw1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster
    PORT=5050
    ```
    Replace <db_username> and <db_password> with your database username and password.

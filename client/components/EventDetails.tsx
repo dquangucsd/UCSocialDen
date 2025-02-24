@@ -37,7 +37,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             {/* Close Button */}
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>X</Text>
+              <Text style={styles.closeButtonText}>x</Text>
             </TouchableOpacity>
 
             {/* Event Title */}
@@ -105,8 +105,11 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: "flex-end",
     backgroundColor: "#ddd",
-    padding: 5,
-    borderRadius: 5,
+    width: width * 0.07,
+    height: width * 0.07,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   closeButtonText: {
     fontSize: 18,

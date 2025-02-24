@@ -1,4 +1,6 @@
 import React from "react";
+import {COLORS} from "../utils/constants";
+
 import {
   View,
   Text,
@@ -20,33 +22,39 @@ interface EventDetailsProps {
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
   if (!event) return null;
 
-  const joinedPeople = [
-    { id: 1, avatar: "https://via.placeholder.com/50" },
-    { id: 2, avatar: "https://via.placeholder.com/50" },
-    { id: 3, avatar: "https://via.placeholder.com/50" },
-    { id: 4, avatar: "https://via.placeholder.com/50" },
-    { id: 5, avatar: "https://via.placeholder.com/50" },
-  ];
-
-  console.log("Joined People:", joinedPeople);
-
+  // const joinedPeople = [
+  //   { id: 1, avatar: "https://via.placeholder.com/50" },
+  //   { id: 2, avatar: "https://via.placeholder.com/50" },
+  //   { id: 3, avatar: "https://via.placeholder.com/50" },
+  //   { id: 4, avatar: "https://via.placeholder.com/50" },
+  //   { id: 5, avatar: "https://via.placeholder.com/50" },
+  // ];
+  console.log(event.start);
   return (
-    <Modal visible animationType="slide" transparent>
+    <Modal visible animationType="none" transparent>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             {/* Close Button */}
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>X</Text>
+              <Text style={styles.closeButtonText}>x</Text>
             </TouchableOpacity>
 
             {/* Event Title */}
             <Text style={styles.title}>{event.name || "Exciting Event"}</Text>
 
+            {/* Event Tag */}
+            <View style={styles.eventTag}>
+              <Text style={styles.eventInfo}>Category: {event.category || "Unknown Category"}</Text>
+            </View>
+
             {/* Event Location & Time Info */}
             <View style={styles.locationTimeContainer}>
+              <Text style={styles.eventInfo}>
+                {event.date ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Unknown Date"}{" "}
+                {event.start || "Unknown Start"} - {event.end || "Unknown End"}
+              </Text>
               <Text style={styles.eventInfo}>Location: {event.location || "Unknown Location"}</Text>
-              <Text style={styles.eventInfo}>{event.date || "Unknown Date"} {event.start || "Unknown Start"} - {event.end || "Unknown End"}</Text>
             </View>
 
             {/* Event Image */}
@@ -55,20 +63,19 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             )}
 
             {/* Description Box */}
-            <Text style={styles.label}>Description</Text>
             <View style={styles.descriptionBox}>
               <Text>{event.description || "No description available."}</Text>
             </View>
 
             {/* Joined People Section */}
-            <View style={styles.joinSection}>
+            {/* <View style={styles.joinSection}>
               <Text style={styles.label}>Joined people</Text>
               <View style={styles.profileContainer}>
                 {joinedPeople.map((person) => (
                   <Image key={person.id} source={{ uri: person.avatar || "https://via.placeholder.com/50"}} style={styles.profileCircle} />
                 ))}
               </View>
-            </View>
+            </View> */}
 
             {/* Join Button */}
             <TouchableOpacity style={styles.joinButton}>
@@ -98,8 +105,11 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: "flex-end",
     backgroundColor: "#ddd",
-    padding: 5,
-    borderRadius: 5,
+    width: width * 0.07,
+    height: width * 0.07,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   closeButtonText: {
     fontSize: 18,
@@ -126,6 +136,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     marginBottom: 10,
+  },
+  eventTag: {
+    backgroundColor: COLORS.brightSun,
+    paddingVertical: 2,
+    fontFamily: 'Zain',
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginBottom: 20,
+    alignSelf: "center",
   },
   eventInfo: {
     fontSize: 14,
@@ -169,6 +188,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
     width: width * 0.8,
+    alignSelf: "center",
   },
   buttonText: {
     color: "white",

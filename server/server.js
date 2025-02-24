@@ -8,6 +8,7 @@ const cors = require("cors");
 require("./config/passport")
 
 
+const PORT = process.env.PORT;
 const app = express();
 app.use(express.json()); 
 app.use(cors());
@@ -27,8 +28,9 @@ app.use("/api/events", require("./routes/event.js"));
 //app.use("/api/users/{email}", require("./routes/userRoutes.js"));
 //app.use("/api/events", require("./routes/eventRoutes"));
 
-const PORT = 5002;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 
 
 

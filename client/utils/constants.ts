@@ -1,7 +1,8 @@
 export const COLORS = {
   indigo: '#556ebe',    // rgb(85, 110, 190)
   brightSun: '#fed83e', // rgb(254, 216, 62)
-  merino: '#f5f0e5',    // rgb(245, 240, 229)
+  merino: '#f5f0e5',    // rgb(245, 240, 229) 
+  blueGray: '#e5e7eb',  // rgb(229, 231, 235)
   periwinkle: '#d2deef', // rgb(210, 222, 239)
   alabaster: '#fafafa',  // rgb(250, 250, 250)
 };

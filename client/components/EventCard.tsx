@@ -17,6 +17,8 @@ interface EventProps {
       location: string;
       description: string;
       image?: string;
+      participants: string[];
+      participant_limit: number;
     };
   }
   
@@ -70,7 +72,7 @@ interface EventProps {
         )}
 
         <View style={styles.joinInfo}>
-          <Text style={styles.eventLimit}>Cur joined / limit</Text>
+          <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
           <TouchableOpacity style={styles.joinButton} >
                   <Text style={styles.eventCategory}>Join</Text>
           </TouchableOpacity>
@@ -83,11 +85,12 @@ interface EventProps {
 const styles = StyleSheet.create({
     eventSection: {
       flex: 1,
-      padding: 16,
+      padding: 15,
     },
     eventCard: {
-      backgroundColor: '#E5E7EB',
-      padding: 12,
+      backgroundColor: COLORS.blueGray,
+      padding: 13,
+      paddingBottom: 5,
       marginBottom: 12,
       borderRadius: 8,
     },
@@ -120,10 +123,11 @@ const styles = StyleSheet.create({
     joinButton: {
         alignSelf:'flex-end',
         backgroundColor: COLORS.indigo,
-        paddingVertical: 6,
+        paddingVertical: 5,
         fontFamily: 'Zain',
         paddingHorizontal: 16,
         borderRadius: 20,
+        marginBottom: 5,
     },
     eventCategory: {
       fontSize: 13,
@@ -162,7 +166,7 @@ const styles = StyleSheet.create({
       fontFamily: 'Zain',
       fontWeight: 'bold',
       color: COLORS.indigo,
-      marginTop: 8,
+      marginTop: 10,
     },
     eventImage: {
       width: '100%',

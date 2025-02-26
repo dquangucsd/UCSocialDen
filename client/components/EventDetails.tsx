@@ -41,7 +41,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             </TouchableOpacity>
 
             {/* Event Title */}
-            <Text style={styles.title}>{event.name || "Exciting Event"}</Text>
+            <Text style={styles.title}>{event.name || "Unknown Event"}</Text>
 
             {/* Event Tag */}
             <View style={styles.eventTag}>
@@ -110,6 +110,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 15,
+    marginTop: 5,
   },
   closeButtonText: {
     fontSize: 18,
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   eventTag: {
     backgroundColor: COLORS.brightSun,
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#556ebe",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
     marginTop: 20,
     width: width * 0.8,

@@ -90,6 +90,7 @@ export default function HomeScreen() {
 
       {/* Event details modal (Opens when event card is clicked) */}
       <Modal
+        animationType="slide"
         transparent={true}
         visible={!!selectedEvent}
         onRequestClose={() => setSelectedEvent(null)}
@@ -225,5 +226,3 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
-
-// export default HomeScreen;

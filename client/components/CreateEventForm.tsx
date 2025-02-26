@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform, Modal } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform, Modal, ScrollView } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -39,14 +39,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
 
   // Tags dropdown
   const availableTags = ["Music", "Art", "Sports", "Food", "Networking"];
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string>("");
   const [isTagDropdownVisible, setIsTagDropdownVisible] = useState(false);
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
 
   // Form error checking
   const [inputErrors, setInputErrors] = useState<ValidInput>({
@@ -106,7 +100,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
       participants: [],
       author: "",
       event_image: "",
-      tags: selectedTags,
+      tags: selectedTag,
       participant_limit: +participantLimit
     };
 
@@ -129,6 +123,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
   };
 
   return (
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
     <View style={styles.background}>
       <View style={styles.container}>
         {!inputErrors.isNameValid && (
@@ -241,7 +236,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             onPress={() => setIsTagDropdownVisible(true)}
           >
             <Text style={styles.tagDropdownText}>
-              {selectedTags.length > 0 ? selectedTags.join(", ") : "Select tags"}
+              {selectedTag ? selectedTag : "Select tags"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -258,15 +253,15 @@ export default function CreateEventForm(props: CreateEventFormProps) {
               {availableTags.map(tag => (
                 <TouchableOpacity
                   key={tag}
-                  onPress={() => toggleTag(tag)}
+                  onPress={() => setSelectedTag(tag)}
                   style={[
                     styles.tagOption,
-                    selectedTags.includes(tag) && styles.selectedTagOption,
+                    selectedTag.includes(tag) && styles.selectedTagOption,
                   ]}
                 >
                 <Text style={[
                     styles.tagOptionText,
-                    selectedTags.includes(tag) && styles.selectedTagOptionText,
+                    selectedTag.includes(tag) && styles.selectedTagOptionText,
                 ]}>{tag}</Text>
                 </TouchableOpacity>
               ))}
@@ -280,6 +275,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
 
           </TouchableOpacity>
         </Modal>
+
+        {/* Description Box */}
         <View style={styles.descriptionContainer}>
           <TextInput
             style={styles.description}
@@ -306,10 +303,14 @@ export default function CreateEventForm(props: CreateEventFormProps) {
         </View>
       </View>
     </View>
+    </ScrollView>
   );
 }
 
 const stylesMobile = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+  },
   background: {
     backgroundColor: COLORS.alabaster,
     width: "100%",
@@ -444,6 +445,7 @@ const stylesMobile = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 10,
+    marginVertical: 5,
   },
   selectedTagOption: {
     backgroundColor: COLORS.indigo
@@ -494,6 +496,7 @@ const stylesMobile = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "flex-end",
+    marginTop: 10,
   },
   buttonText: {
     fontSize: 22,
@@ -509,6 +512,9 @@ const stylesMobile = StyleSheet.create({
 
 const stylesDesktop = StyleSheet.create({
   // Desktop styles remain as in your original code
+  scrollContainer: {
+    flexGrow: 1,
+  },
   background: {
     backgroundColor: "rgba(0, 0, 0, 0.7)",
     width: "100%",
@@ -518,8 +524,8 @@ const stylesDesktop = StyleSheet.create({
   },
   container: {
     backgroundColor: COLORS.alabaster,
-    width: "50%",
-    height: "60%",
+    width: "100%",
+    height: "100%",
     padding: 25,
     borderRadius: 10,
     flexDirection: "column",

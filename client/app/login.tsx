@@ -12,12 +12,15 @@ export default function LoginScreen() {
 
     useEffect(() => {
         async function checkAuth() {
-            const token = await AsyncStorage.getItem("jwt");
-            if (token) {
-                router.replace("/HomeScreen");
-            } else {
-                setLoading(false); 
-            }
+            // const token = await AsyncStorage.getItem("jwt");
+            // if (token) {
+            //     router.replace("/HomeScreen");
+            // } else {
+            //     setLoading(false); 
+            // }
+            await AsyncStorage.removeItem("jwt");
+            await AsyncStorage.removeItem("user");
+            setLoading(false);
         }
 
         checkAuth();

@@ -1,6 +1,6 @@
 // // import WelcomePage from './WelcomePage';
-import HomeScreen from './login';
+import loginScreen from './login';
 
-export default HomeScreen;
+export default loginScreen;
 
 // export default WelcomePage;

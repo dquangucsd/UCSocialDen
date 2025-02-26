@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 
 const uri = process.env.MONGO_URI || "";
@@ -12,7 +13,7 @@ const connectDB = async () => {
   }
 };
 
-// **保持进程运行**
-// setInterval(() => console.log("MongoDB Connection Active..."), 5000);
+
+// setInterval(() => console.log("MongoDB Connection Active..."), 5002);
 
 module.exports = connectDB;

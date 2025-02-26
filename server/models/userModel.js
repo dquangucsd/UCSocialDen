@@ -12,7 +12,8 @@ const UserSchema = new Schema({
   number_post: { type: Number, default: 0 }, 
   pid: { type: String, required: true },
   profile_photo: { type: String, default: "" },
-  rating: { type: Number, default: 0 }
+  rating: { type: Number, default: 0 },
+  joinedEvents: [{ type: Number, ref: "Event", default: [] }]
 }); 
 
 module.exports = mongoose.model("User", UserSchema);

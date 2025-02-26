@@ -50,7 +50,7 @@ passport.use(
                 
                 const token = jwt.sign( // here, the email is in our database, then we can generate a token and log the user in
                     { // object aka payload
-                        email: user.email,
+                        email: user._id,
                         name: user.name,
                         image: user.profile_photo
                     },

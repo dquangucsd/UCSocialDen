@@ -5,34 +5,38 @@ import { useRouter } from "expo-router";
 import TopNavBar from "../components/layout/TopNavBar";
 import Sidebar from "../components/layout/Sidebar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {jwtDecode} from "jwt-decode"; // ✅ 确保使用 `default` 导入
+import {jwtDecode} from "jwt-decode"; 
 
 
 
 export default function Profile() {
   const router = useRouter();
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [userData, setUserData] = useState<any>(null); // 存储用户数据
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
     async function fetchProfileImage() {
       const token = await AsyncStorage.getItem("jwt");
+      console.log("token:", token);
       if (token) {
         try {
           const decodedToken: any = jwtDecode(token);
           console.log("Decoded Token:", decodedToken);
-  
-          // 确保 image 字段存在
+
+          setUserData({
+            name: decodedToken.name || "Unknown User",
+            email: decodedToken.email || "No Email Provided",
+          });
           if (decodedToken.image) {
             console.log("Profile Image URL:", decodedToken.image);
-            setProfileImage(decodedToken.image); // 更新状态
+            setProfileImage(decodedToken.image); 
           } else {
             console.warn("No image found in JWT");
-            setProfileImage("https://via.placeholder.com/80"); // 默认头像
+            setProfileImage("https://via.placeholder.com/80"); 
           }
         } catch (error) {
           console.error("Error decoding JWT:", error);
-          setProfileImage("https://via.placeholder.com/80"); // 解析失败使用默认头像
+          setProfileImage("https://via.placeholder.com/80");
         }
       }
     }

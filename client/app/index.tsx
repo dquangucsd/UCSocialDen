@@ -1,4 +1,6 @@
-import WelcomePage from './WelcomePage';
+// // import WelcomePage from './WelcomePage';
+import HomeScreen from './login';
 
+export default HomeScreen;
 
-export default WelcomePage;
+// export default WelcomePage;

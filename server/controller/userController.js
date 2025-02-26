@@ -30,7 +30,6 @@ const getUsers = async (req, res) => {
 };
 
 
-
 const getUserByEmail = async (req, res) => {
   try {
     const user = await User.findById(req.params.email, "-password"); //find user by email, from :email from frontend input

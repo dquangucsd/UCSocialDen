@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions,Image } from 'react-native';
 import { COLORS } from '../../utils/constants';
 import { useRouter } from 'expo-router';
-
+import { Route } from 'expo-router/build/Route';
+import WelcomePage from '../../app/WelcomePage';
+import { AuthContext } from "../../contexts/AuthContext";
 interface TopNavBarProps {
   activeTab: string;
 }
 
 export default function TopNavBar({ activeTab }: TopNavBarProps) {
+  const { userData, profileImage } = useContext(AuthContext) ?? {}; 
   const router = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  
 
   const updateMenuPosition = (event: any) => {
     const { pageY, pageX } = event.nativeEvent;
@@ -28,7 +32,7 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
         <View style={styles.navLinks}>
           <TouchableOpacity 
             style={styles.navLinkContainer}
-            onPress={() => router.push('/')}
+            onPress={() => router.push('/HomeScreen')}
           >
             <Text style={[
               styles.navLink,
@@ -44,7 +48,9 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
               setIsProfileMenuOpen(!isProfileMenuOpen);
             }}
           >
-            <View style={styles.profileCircle} />
+            <Image source={{ uri: profileImage || "https://via.placeholder.com/80" }}
+              style={styles.profileCircle} 
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -70,6 +76,7 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
               onPress={() => {
                 console.log('Sign out clicked');
                 setIsProfileMenuOpen(false);
+                router.push('/');
               }}
             >
               <Text style={styles.profileMenuText}>Sign Out</Text>

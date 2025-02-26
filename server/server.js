@@ -18,6 +18,11 @@ connectDB();
 // app.get("/", (req, res) => {
 //   res.send("Hello from Express + Mongoose!");
 // });
+app.use(cors({
+  origin: "http://localhost:8081",  // 只允许前端访问
+  credentials: true,  // 允许带 cookie、认证头等信息
+}));
+
 app.use(passport.initialize());
 
 app.use("/auth", authRoutes);

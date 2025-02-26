@@ -33,7 +33,8 @@ router.get(
         const { token, user } = req.user; // login
     
         // redirect to homepage with token, meaning you are logged in with the homepage
-        res.redirect(`http://localhost:8081?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        // res.json({ token, user });
+        res.redirect(`http://localhost:8081/oauth-handler?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
     }
 );
 

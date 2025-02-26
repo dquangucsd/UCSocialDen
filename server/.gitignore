@@ -1,5 +1,6 @@
 #configs
 #config.env
+.env
 
 # Xcode
 !**/*.xcodeproj
@@ -164,4 +165,4 @@ vendor/
 /packages/react-native/types_generated/
 
 expo-env.d.ts
-/.expo
+/.expo".env" 

@@ -69,7 +69,9 @@ export default function HomeScreen() {
       }
       console.log("response:", response);
       const events = await response.json();
-      setEvents(events);
+      const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setEvents(sortedEvents);
     }
 
     fetchAuth();

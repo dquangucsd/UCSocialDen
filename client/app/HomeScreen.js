@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, useWindowDimensions } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS, MOCK_EVENTS } from '../utils/constants';
@@ -9,11 +9,16 @@ import Sidebar from '../components/layout/Sidebar';
 import CreateEventForm from '../components/CreateEventForm';
 import EventCard from '../components/EventCard';
 import EventDetails from '../components/EventDetails';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getToken } from '../utils/auth';
+import { AuthContext } from "../contexts/AuthContext";
 
 const SERVER_PORT = 5002; //process.env.PORT;
 
 export default function HomeScreen() {
+  const { userData, profileImage } = useContext(AuthContext);
   const router = useRouter();
+  //const [profileImage, setProfileImage] = useState<string | null>(null);
   const {
     currentMonth,
     selectedDate,
@@ -30,6 +35,33 @@ export default function HomeScreen() {
 
   // This method fetches the events from the database.
   useEffect(() => {
+    async function fetchAuth() {
+      try {
+          const response = await fetch("http://localhost:5002/auth/google/callback", {
+              method: "GET",
+              credentials: "include", 
+          });
+
+          if (!response.ok) {
+              console.error("Login failed:", response.statusText);
+              return;
+          }
+
+          const data = await response.json();
+          console.log("✅ Token received:", data.token);
+
+          await AsyncStorage.setItem("jwt", data.token);
+          await AsyncStorage.setItem("user", JSON.stringify(data.user));
+          getEvents();
+          router.replace("/HomeScreen");
+          
+      } catch (error) {
+          console.error("Error fetching auth:", error);
+      }
+  }
+
+
+
     async function getEvents() {
       const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`);
 
@@ -40,8 +72,12 @@ export default function HomeScreen() {
       }
       console.log("response:", response);
       const events = await response.json();
-      setEvents(events);
+      const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setEvents(sortedEvents);
     }
+
+    fetchAuth();
     getEvents();
     return;
   }, [events.length]);

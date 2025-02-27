@@ -13,11 +13,16 @@ export default function RegisterScreen() {
     const [name, setName] = useState("");
     const [major, setMajor] = useState("");
     const [pid, setPid] = useState("");
-    const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+    const [bio, setBio] = useState("");
+    const [profilePhoto, setProfilePhoto] = useState(String || null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const handleRegister = async () => {
+        if (!name || !major || !pid || !email) {
+            alert("All required fields must be filled out.");
+            return;
+        }
         setLoading(true);
         setError(null);
         
@@ -27,17 +32,17 @@ export default function RegisterScreen() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email, name, major, pid, profilePhoto }),
+                body: JSON.stringify({ email, name, major, pid, bio, profilePhoto }),
             });
             
             const data = await response.json();
             if (response.ok) {
-                router.replace("/HomeScreen");
+                router.replace("/login");
             } else {
                 setError(data.message || "Registration failed");
             }
         } catch (error) {
-            console.error("Something went wrong. Please try again.");
+            console.log("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -89,6 +94,13 @@ export default function RegisterScreen() {
                     value={email} 
                     onChangeText={setEmail} 
                     keyboardType="email-address"
+                />
+                <TextInput 
+                    style={styles.input} 
+                    placeholder="Bio (Optional)" 
+                    value={bio} 
+                    onChangeText={setBio} 
+                    multiline
                 />
                 <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
                     <Text style={styles.uploadText}>Upload Profile Photo</Text>

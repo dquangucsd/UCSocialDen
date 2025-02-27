@@ -45,7 +45,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
 
             {/* Event Tag */}
             <View style={styles.eventTag}>
-              <Text style={styles.eventInfo}>Category: {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}</Text>
+              <Text style={styles.eventInfo}>{event.tags && event.tags.length > 0 ? event.tags : "Unknown"}</Text>
             </View>
 
             {/* Event Location & Time Info */}

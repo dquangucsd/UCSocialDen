@@ -28,21 +28,23 @@ interface EventProps {
         
       <View key={event.id} style={styles.eventCard}>
         <View style={styles.eventHeader}>
+          {/* Event Title */}
           <View>
             <Text style={styles.eventTitle}>{event.name}</Text>
           </View>
 
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventDetails}>
-              <MaterialIcons name="location-on" size={14} color="#374151" /> {event.location}
+          {/* Event Tag*/}
+          <View>
+            <TouchableOpacity style={styles.eventTag} disabled>
+            <Text style={styles.tagText}>
+              {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}
             </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.eventInfo}>
-          
-        </View>
-        <Text style={styles.timeDetails}>
+        {/* Event Time Info */}
+        <Text style={styles.eventDetails}>
               {new Date(event.start_time).toLocaleString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -58,12 +60,12 @@ interface EventProps {
               })}
         </Text>
 
-        <View>
-          <TouchableOpacity style={styles.eventTag} disabled>
-          <Text style={styles.eventCategory}>
-            {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}
+        {/* Event Location Info */}
+        <View style={styles.locationInfo}>
+          <MaterialIcons name="location-on" size={14} color="#374151" />
+          <Text style={styles.eventDetails}>
+             {event.location}
           </Text>
-          </TouchableOpacity>
         </View>
         
         {/* <Text style={styles.eventDescription}>{event.description}</Text> */}
@@ -74,7 +76,7 @@ interface EventProps {
         <View style={styles.joinInfo}>
           <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
           <TouchableOpacity style={styles.joinButton} >
-                  <Text style={styles.eventCategory}>Join</Text>
+                  <Text style={styles.joinText}>Join</Text>
           </TouchableOpacity>
         </View>
 
@@ -98,13 +100,14 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       flexWrap: 'wrap',
+      marginBottom: 5,
     },
     eventTitle: {
       fontSize: 23,
       fontFamily: 'Zain',
       fontWeight: 'bold',
       color: COLORS.indigo,
-      maxWidth: width * 0.6,
+      maxWidth: width * 0.3,
       lineHeight: 20,
     },
     eventTag: {
@@ -125,34 +128,33 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.indigo,
         paddingVertical: 5,
         fontFamily: 'Zain',
-        paddingHorizontal: 16,
+        paddingHorizontal: 15,
         borderRadius: 20,
-        marginBottom: 5,
+        marginBottom: 4,
     },
-    eventCategory: {
-      fontSize: 13,
+    tagText: {
+      fontSize: 12,
       color: COLORS.alabaster,
       fontWeight: 'medium',
       alignSelf: 'center',
     },
-    eventInfo: {
-      alignItems: 'flex-end',
-      flex: 1,
-      justifyContent: 'flex-start',
+    joinText: {
+      fontSize: 14,
+      color: COLORS.alabaster,
+      fontWeight: 'medium',
+      alignSelf: 'center',
+    },
+    locationInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
     },
     eventDetails: {
       color: '#374151',
       fontFamily: 'Verdana',
       fontSize: 12,
-      textAlign: 'right',
-      maxWidth: width * 0.4,
-    },
-    timeDetails: {
-      color: '#374151',
-      fontFamily: 'Verdana',
-      fontSize: 12,
       textAlign: 'left',
-      marginBottom: 5,
+      marginBottom: 2,
     },
     eventDescription: {
       color: '#4B5563',
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
     },
     eventLimit: {
       textAlign: 'left',
-      fontSize: 20,
+      fontSize: 16,
       fontFamily: 'Zain',
       fontWeight: 'bold',
       color: COLORS.indigo,

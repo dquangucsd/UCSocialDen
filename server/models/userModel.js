@@ -7,7 +7,7 @@ const UserSchema = new Schema({
   intro: { type: String, default: "" },
   major: { type: String, default: "" },
   name: { type: String, required: true },
-  password: { type: String, required: true },
+  // password: { type: String, required: true },
   tag: [{ type: String, default: [] }], 
   number_post: { type: Number, default: 0 }, 
   pid: { type: String, required: true },
@@ -16,4 +16,5 @@ const UserSchema = new Schema({
   joinedEvents: [{ type: Number, ref: "Event", default: [] }]
 }); 
 
-module.exports = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+module.exports = User;

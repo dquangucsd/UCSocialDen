@@ -34,26 +34,25 @@ export default function HomeScreen() {
   useEffect(() => {
     async function fetchAuth() {
       try {
-          const response = await fetch("http://localhost:5002/auth/google/callback", {
-              method: "GET",
-              credentials: "include", 
-          });
+        const response = await fetch("http://localhost:5002/auth/google/callback", {
+            method: "GET",
+            credentials: "include", 
+        });
+        console.log(1);
+        if (!response.ok) {
+            console.error("Login failed:", response.statusText);
+            return;
+        }
 
-          if (!response.ok) {
-              console.error("Login failed:", response.statusText);
-              return;
-          }
+        const data = await response.json();
+        console.log("Token received:", data.token);
 
-          const data = await response.json();
-          console.log("✅ Token received:", data.token);
-
-          await AsyncStorage.setItem("jwt", data.token);
-          await AsyncStorage.setItem("user", JSON.stringify(data.user));
-          getEvents();
-          router.replace("/HomeScreen");
-          
+        await AsyncStorage.setItem("jwt", data.token);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        console.log(1);
+        router.replace("/HomeScreen");
       } catch (error) {
-          console.error("Error fetching auth:", error);
+        console.error("Error fetching auth:", error);
       }
   }
 

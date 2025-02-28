@@ -3,8 +3,10 @@ import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform, M
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {jwtDecode} from "jwt-decode";
 
-const SERVER_PORT = 5002;
+const SERVER_PORT = 5002; //process.env.PORT;
 
 type ValidInput = {
   isNameValid: boolean,
@@ -15,7 +17,8 @@ type ValidInput = {
 };
 
 type CreateEventFormProps = {
-  setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>
+    setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>,
+    onEventCreated: (newEvent: any) => void
 };
 
 export default function CreateEventForm(props: CreateEventFormProps) {
@@ -70,8 +73,9 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     );
   };
 
-  const submitCreateEventForm = async () => {
-    if (!validateFormInput()) return;
+    const submitCreateEventForm = async () => {
+        console.log("Creating a new event...");
+        if (!validateFormInput()) return
 
     const createTime = new Date();
     const startDateTime = new Date(
@@ -104,23 +108,39 @@ export default function CreateEventForm(props: CreateEventFormProps) {
       participant_limit: +participantLimit
     };
 
-    try {
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event)
-      });
+        const token = await AsyncStorage.getItem("jwt");
+        if (!token) {
+            console.warn("No JWT found in AsyncStorage");
+            return;
+        }
+        const decodedToken: any = jwtDecode(token);
+        // console.log("Decoded Token:", decodedToken);
+        if (!decodedToken.email) {
+            console.warn("No email found in JWT");
+            return;
+        }
+        
+        const user_ID = decodedToken.email;
 
-      if (response.ok) {
-        alert("Success! Event created successfully!");
-        props.setIsCreateEventFormVisible(false);
-      } else {
-        alert("Error! Event creation failed, please try again later.");
-      }
-    } catch (error: any) {
-      alert("Error" + error.message);
+        try {
+            const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/create/${user_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(event)
+            });
+            
+            if (response.ok) {
+                const newEvent = await response.json();
+                alert("Success! Event created successfully!");
+                props.setIsCreateEventFormVisible(false);
+                props.onEventCreated(newEvent);
+            } else {
+                alert("Error! Event creation failed, please try again later.");
+            }
+        } catch (error: any) {
+            alert("Error" + error.message);
+        }
     }
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

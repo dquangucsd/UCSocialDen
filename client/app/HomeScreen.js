@@ -12,6 +12,7 @@ import EventDetails from '../components/EventDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getToken } from '../utils/auth';
 import { AuthContext } from "../contexts/AuthContext";
+import {jwtDecode} from "jwt-decode";
 
 const SERVER_PORT = 5002; //process.env.PORT;
 
@@ -33,36 +34,34 @@ export default function HomeScreen() {
   const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  const [joinedEvents, setJoinedEvents] = useState([]);
   // This method fetches the events from the database.
   useEffect(() => {
     async function fetchAuth() {
       try {
-          const response = await fetch("http://localhost:5002/auth/google/callback", {
-              method: "GET",
-              credentials: "include", 
-          });
+        const response = await fetch("http://localhost:5002/auth/google/callback", {
+            method: "GET",
+            credentials: "include", 
+        });
+        console.log(1);
+        if (!response.ok) {
+            console.error("Login failed:", response.statusText);
+            return;
+        }
 
-          if (!response.ok) {
-              console.error("Login failed:", response.statusText);
-              return;
-          }
+        const data = await response.json();
+        console.log("Token received:", data.token);
 
-          const data = await response.json();
-          console.log("✅ Token received:", data.token);
-
-          await AsyncStorage.setItem("jwt", data.token);
-          await AsyncStorage.setItem("user", JSON.stringify(data.user));
-          getEvents();
-          router.replace("/HomeScreen");
-          
+        await AsyncStorage.setItem("jwt", data.token);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        router.replace("/HomeScreen");
       } catch (error) {
-          console.error("Error fetching auth:", error);
+        console.error("Error fetching auth:", error);
       }
   }
-
-
-
+  
     async function getEvents() {
+      console.log("Fetching all events...");
       const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`);
 
       if (!response.ok) {
@@ -77,10 +76,46 @@ export default function HomeScreen() {
       setEvents(sortedEvents);
     }
 
+    async function getJoinedEvents() {
+      console.log("Fetching user joined events...");
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        console.warn("No JWT found in AsyncStorage");
+        return;
+      }
+      const decodedToken: any = jwtDecode(token);
+      // console.log("Decoded Token:", decodedToken);
+      if (!decodedToken.email) {
+        console.warn("No email found in JWT");
+        return;
+      }
+      
+      const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      // console.log("response:", response);
+      const results = await response.json();
+      const sortedEvents = results.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setJoinedEvents(sortedEvents);
+    }
+
     fetchAuth();
     getEvents();
+    getJoinedEvents();
     return;
   }, [events.length]);
+
+  // After creating an event, this method adds the new event to the list of events.
+  const handleEventCreated = (newEvent) => {
+    setEvents(prevEvents => [newEvent, ...prevEvents]);
+    setJoinedEvents(prevEvents => [newEvent, ...prevEvents].sort((a, b) => new Date(a.start_time) - new Date(b.start_time)));
+  };
 
   function eventList() {
     return events.map((event) => (
@@ -121,7 +156,8 @@ export default function HomeScreen() {
         visible={isCreateEventFormVisible}
         onRequestClose={() => setIsCreateEventFormVisible(false)}
       >
-        <CreateEventForm setIsCreateEventFormVisible={setIsCreateEventFormVisible} />
+        <CreateEventForm setIsCreateEventFormVisible={setIsCreateEventFormVisible} 
+        onEventCreated={handleEventCreated} />
       </Modal>
 
       {/* Event details modal (Opens when event card is clicked) */}
@@ -138,7 +174,7 @@ export default function HomeScreen() {
       <TopNavBar activeTab="Events" />
 
       <View style={styles.mainContent}>
-        <Sidebar />
+        <Sidebar events={joinedEvents} />
         
         {/* Events Section */}
         <View style={[styles.eventSection, { padding: getPadding() * 2 }]}>

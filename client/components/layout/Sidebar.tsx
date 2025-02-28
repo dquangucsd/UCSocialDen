@@ -4,7 +4,7 @@ import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
 import { useCalendar } from '../../hooks/useCalendar';
 
-export default function Sidebar() {
+export default function Sidebar({ events }) {
   const [isOpen, setIsOpen] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
@@ -31,9 +31,9 @@ export default function Sidebar() {
       
       <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
         <Text style={styles.sidebarTitle}>Your Events</Text>
-        {['Name', 'Name', 'Name', 'Name', 'Name', 'Name'].map((item, index) => (
+        {events.map((item, index) => (
           <TouchableOpacity key={index} style={styles.sidebarItem}>
-            <Text style={styles.sidebarText}>{item}</Text>
+            <Text style={styles.sidebarText}>{item.name}</Text>
           </TouchableOpacity>
         ))}
         

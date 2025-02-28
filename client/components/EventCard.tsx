@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, Dimensions } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { Colors } from '../constants/Colors';
+import { MaterialIcons } from '@expo/vector-icons'; // or 'react-native-vector-icons/MaterialIcons'
 
 
+const { width, height } = Dimensions.get("window");
 
 interface EventProps {
     event: {
       id: string;
-      title: string;
-      category: string;
-      start: string;
-      end: string;
+      name: string;
+      tags: string;
+      start_time: string;
+      end_time: string;
       location: string;
       description: string;
       image?: string;
+      participants: string[];
+      participant_limit: number;
     };
   }
   
@@ -24,27 +28,58 @@ interface EventProps {
         
       <View key={event.id} style={styles.eventCard}>
         <View style={styles.eventHeader}>
+          {/* Event Title */}
           <View>
-            <Text style={styles.eventTitle}>{event.title}</Text>
+            <Text style={styles.eventTitle}>{event.name}</Text>
+          </View>
+
+          {/* Event Tag*/}
+          <View>
             <TouchableOpacity style={styles.eventTag} disabled>
-                <Text style={styles.eventCategory}>{event.category}</Text>
+            <Text style={styles.tagText}>
+              {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}
+            </Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventLimit}>Cur joined / limit</Text>
-            <Text style={styles.eventDetails}>Location: {event.location}</Text>
-            <Text style={styles.eventDetails}>Time: {event.start} - {event.end}</Text>
-          </View>
-
         </View>
-        <Text style={styles.eventDescription}>{event.description}</Text>
+
+        {/* Event Time Info */}
+        <Text style={styles.eventDetails}>
+              {new Date(event.start_time).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              -{" "}
+              {new Date(event.end_time).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+        </Text>
+
+        {/* Event Location Info */}
+        <View style={styles.locationInfo}>
+          <MaterialIcons name="location-on" size={14} color="#374151" />
+          <Text style={styles.eventDetails}>
+             {event.location}
+          </Text>
+        </View>
+        
+        {/* <Text style={styles.eventDescription}>{event.description}</Text> */}
         {event.image && (
           <Image source={{ uri: event.image }} style={styles.eventImage} />
         )}
-        <TouchableOpacity style={styles.joinButton} >
-                <Text style={styles.eventCategory}>Join</Text>
-        </TouchableOpacity>
+
+        <View style={styles.joinInfo}>
+          <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
+          <TouchableOpacity style={styles.joinButton} >
+                  <Text style={styles.joinText}>Join</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
     );
   };
@@ -52,54 +87,74 @@ interface EventProps {
 const styles = StyleSheet.create({
     eventSection: {
       flex: 1,
-      padding: 16,
+      padding: 15,
     },
     eventCard: {
-      backgroundColor: '#E5E7EB',
-      padding: 16,
+      backgroundColor: COLORS.blueGray,
+      padding: 13,
+      paddingBottom: 5,
       marginBottom: 12,
       borderRadius: 8,
     },
     eventHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 10,
+      flexWrap: 'wrap',
+      marginBottom: 5,
     },
     eventTitle: {
-      fontSize: 24,
+      fontSize: 23,
       fontFamily: 'Zain',
       fontWeight: 'bold',
       color: COLORS.indigo,
+      maxWidth: width * 0.3,
+      lineHeight: 20,
     },
     eventTag: {
         backgroundColor: COLORS.brightSun,
-        paddingVertical: 8,
-        fontFamily: 'Zain',
-        paddingHorizontal: 16,
+        paddingHorizontal: 5,
         borderRadius: 20,
+        maxWidth: width * 0.4,
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+    },
+    joinInfo: {
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'space-between',
     },
     joinButton: {
         alignSelf:'flex-end',
         backgroundColor: COLORS.indigo,
-        paddingVertical: 8,
+        paddingVertical: 5,
         fontFamily: 'Zain',
-        paddingHorizontal: 16,
+        paddingHorizontal: 15,
         borderRadius: 20,
-        
+        marginBottom: 4,
     },
-    eventCategory: {
+    tagText: {
+      fontSize: 12,
+      color: COLORS.alabaster,
+      fontWeight: 'medium',
+      alignSelf: 'center',
+    },
+    joinText: {
       fontSize: 14,
       color: COLORS.alabaster,
       fontWeight: 'medium',
+      alignSelf: 'center',
     },
-    eventInfo: {
-      alignItems: 'flex-end',
+    locationInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
     },
     eventDetails: {
       color: '#374151',
       fontFamily: 'Verdana',
-      paddingTop: 2,
-      fontSize: 14,
+      fontSize: 12,
+      textAlign: 'left',
+      marginBottom: 2,
     },
     eventDescription: {
       color: '#4B5563',
@@ -108,11 +163,12 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     eventLimit: {
-      textAlign: 'right',
-      fontSize: 24,
+      textAlign: 'left',
+      fontSize: 16,
       fontFamily: 'Zain',
       fontWeight: 'bold',
       color: COLORS.indigo,
+      marginTop: 10,
     },
     eventImage: {
       width: '100%',

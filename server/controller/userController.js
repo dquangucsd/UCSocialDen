@@ -169,6 +169,98 @@ const uploadimage = async(req,res) => {
 
 
 
+// const register = async (req, res) => {
+//   try {
+//     const { email, name, password } = req.body;
+//     const newUser = await User.create({ email, name, password });
+//     res.status(201).json(newUser);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to register" });
+//   }
+// };
+
+// const register = async (req, res) => {
+//   try {
+//     const { email, name, major, pid, bio, profilePhoto } = req.body;
+
+//     if (!email || !name || !major || !pid) {
+//       return res.status(400).json({ success: false, message: "All required fields must be filled out." });
+//     }
+
+//     let user = await User.findOne({ email });
+//     if (user) {
+//       return res.status(400).json({ success: false, message: "User already exists." });
+//     }
+
+//     user = new User({
+//       email,
+//       name,
+//       major,
+//       pid,
+//       bio,
+//       profile_photo: profilePhoto || null, // If no profile photo, keep it null
+//     });
+
+//     await user.save();
+    
+//     res.status(201).json({ success: true, message: "User registered successfully", user });
+//   } catch (error) {
+//     console.error("Registration Error:", error);
+//     res.status(500).json({ success: false, message: "Failed to register user" });
+//   }
+// };
+
+
+const register = async (req, res) => {
+  try {
+    const { email, name, major, pid, bio = "" } = req.body;
+
+    if (!email || !name || !major || !pid) {
+      return res.status(400).json({ success: false, message: "All required fields must be filled out." });
+    }
+
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ success: false, message: "User already exists." });
+    }
+
+    let profilePhoto = null;
+    if (req.file) {
+      try {
+        const uploadResponse = await uploadimage(req, res);
+        if (uploadResponse.success) {
+          profilePhoto = uploadResponse.user.profile_photo;
+        } else {
+          return res.status(500).json({ success: false, message: "Profile photo upload failed." });
+        }
+      } catch (error) {
+        console.error("Profile Photo Upload Error:", error);
+        return res.status(500).json({ success: false, message: "Error uploading profile photo." });
+      }
+    }
+    const _id = email;
+
+    user = new User({
+      _id: email,
+      email,
+      name,
+      major,
+      pid,
+      bio: bio || "",
+      profile_photo: profilePhoto,
+    });
+
+    await user.save();
+    
+    res.status(201).json({ success: true, message: "User registered successfully", user });
+  } catch (error) {
+    console.error("Registration Error:", error);
+    res.status(500).json({ success: false, message: "Failed to register user" });
+  }
+};
+
+
+
 
 module.exports = {
   getUsers,
@@ -176,5 +268,6 @@ module.exports = {
   updateUserIntro,
   Upload: upload.single("profile_image"), 
   uploadimage,
-  joinEvent
+  joinEvent,
+  register
 };

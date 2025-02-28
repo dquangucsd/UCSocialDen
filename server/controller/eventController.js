@@ -27,11 +27,22 @@ const createEvent = async (req, res) => {
     // get current time as create_time
     newevent['create_time'] = new Date();
 
-    // TODO: Replace the author with real user
-    newevent['author'] = "null";
+    // Replace the author with the user
+    newevent['author'] = req.params.userID;
 
-    console.log(newevent);
+    console.log("Creating a new event", newevent);
     const newEvent = await Event.create(newevent);
+
+    // Add the event to the user's joinedEvents
+    try{
+      const user= await User.findById(req.params.userID);
+      user.joinedEvents.push(newEvent._id);
+      await user.save();
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Failed to add the event to the user's joinedEvents" });
+    }
+
     res.status(201).json(newEvent);
   } catch (error) {
     console.log(error);
@@ -42,12 +53,9 @@ const createEvent = async (req, res) => {
 // get events by many IDs (IDs come from the user's joinedEvents)
 const getEventsByIds = async (req, res) => {
   try {
-    console.log(req.params.userID);
+    // console.log(req.params.userID);
     const user = await User.findById(req.params.userID).populate("joinedEvents")
-    // console.log(user);
-    console.log(user.joinedEvents);
-    // const event = await Event.findById(req.params.id);
-    // if (!joined_events) return res.status(404).json({ error: "事件未找到" });
+    if (!user) return res.status(404).json({ error: "Failed to find the user" });
     res.status(200).json(user.joinedEvents);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch joined events" });

@@ -3,6 +3,9 @@ import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform } 
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {jwtDecode} from "jwt-decode";
+
 const SERVER_PORT = 5002; //process.env.PORT;
 
 type ValidInput = {
@@ -73,6 +76,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     }
 
     const submitCreateEventForm = async () => {
+        console.log("Creating a new event...");
         if (!validateFormInput()) return
 
         const createTime = new Date(Date.now());
@@ -106,8 +110,22 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             participant_limit: +participantLimit
         };
 
+        const token = await AsyncStorage.getItem("jwt");
+        if (!token) {
+            console.warn("No JWT found in AsyncStorage");
+            return;
+        }
+        const decodedToken: any = jwtDecode(token);
+        // console.log("Decoded Token:", decodedToken);
+        if (!decodedToken.email) {
+            console.warn("No email found in JWT");
+            return;
+        }
+        
+        const user_ID = decodedToken.email;
+
         try {
-            const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`, {
+            const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/create/${user_ID}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(event)

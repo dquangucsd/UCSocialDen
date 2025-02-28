@@ -51,7 +51,7 @@ export default function Sidebar() {
       }
       // console.log("response:", response);
       const events = await response.json();
-      // const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+      const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
       setEvents(events);
     }

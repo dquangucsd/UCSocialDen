@@ -1,4 +1,3 @@
-require("dotenv").config();
 const mongoose = require("mongoose");
 const { S3Client, PutObjectCommand , DeleteObjectCommand} = require("@aws-sdk/client-s3");
 const User = require("../models/userModel");

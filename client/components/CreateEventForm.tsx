@@ -17,7 +17,8 @@ type ValidInput = {
 };
 
 type CreateEventFormProps = {
-    setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>
+    setIsCreateEventFormVisible: React.Dispatch<React.SetStateAction<boolean>>,
+    onEventCreated: (newEvent: any) => void
 };
 
 export default function CreateEventForm(props: CreateEventFormProps) {
@@ -132,8 +133,10 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             });
             
             if (response.ok) {
+                const newEvent = await response.json();
                 alert("Success! Event created successfully!");
                 props.setIsCreateEventFormVisible(false);
+                props.onEventCreated(newEvent);
             } else {
                 alert("Error! Event creation failed, please try again later.");
             }

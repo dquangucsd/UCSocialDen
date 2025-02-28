@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
-import * as ImagePicker from 'expo-image-picker';
+// import * as ImagePicker from 'expo-image-picker';
 
 const SERVER_PORT = 5002;
 const BACKEND_URL = `http://localhost:${SERVER_PORT}`;
@@ -27,7 +27,7 @@ export default function RegisterScreen() {
         setError(null);
         
         try {
-            const response = await fetch(`${BACKEND_URL}/auth/register`, {
+            const response = await fetch(`${BACKEND_URL}/api/users/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -48,18 +48,18 @@ export default function RegisterScreen() {
         }
     };
 
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 4],
-            quality: 1,
-        });
+    // const pickImage = async () => {
+    //     let result = await ImagePicker.launchImageLibraryAsync({
+    //         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    //         allowsEditing: true,
+    //         aspect: [4, 4],
+    //         quality: 1,
+    //     });
 
-        if (!result.canceled) {
-            setProfilePhoto(result.assets[0].uri);
-        }
-    };
+    //     if (!result.canceled) {
+    //         setProfilePhoto(result.assets[0].uri);
+    //     }
+    // };
 
     return (
         <View style={styles.container}>
@@ -102,10 +102,10 @@ export default function RegisterScreen() {
                     onChangeText={setBio} 
                     multiline
                 />
-                <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+                {/* <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
                     <Text style={styles.uploadText}>Upload Profile Photo</Text>
                 </TouchableOpacity>
-                {profilePhoto && <Text>Photo selected</Text>}
+                {profilePhoto && <Text>Photo selected</Text>} */}
                 {loading ? (
                     <ActivityIndicator size="large" color="#007AFF" />
                 ) : (

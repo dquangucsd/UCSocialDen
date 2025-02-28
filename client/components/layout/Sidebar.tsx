@@ -3,11 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Touchabl
 import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
 import { useCalendar } from '../../hooks/useCalendar';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {jwtDecode} from "jwt-decode";
-const SERVER_PORT = 5002; //process.env.PORT;
 
-export default function Sidebar() {
+export default function Sidebar({ events }) {
   const [isOpen, setIsOpen] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
@@ -23,41 +20,6 @@ export default function Sidebar() {
       </TouchableOpacity>
     );
   }
-
-  // fetch user's events from the server
-  const [events, setEvents] = useState([]);
-  useEffect(() => {
-    console.log("Fetching user joined events...");
-    async function getEvents() {
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
-        console.warn("No JWT found in AsyncStorage");
-        return;
-      }
-      const decodedToken: any = jwtDecode(token);
-      // console.log("Decoded Token:", decodedToken);
-      if (!decodedToken.email) {
-        console.warn("No email found in JWT");
-        return;
-      }
-      
-      const user_ID = decodedToken.email;
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        console.error(message);
-        return;
-      }
-      // console.log("response:", response);
-      const events = await response.json();
-      const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-
-      setEvents(events);
-    }
-    getEvents();
-    return;
-  }, [events.length]);
 
   return (
     <>

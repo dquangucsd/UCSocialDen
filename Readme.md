@@ -9,7 +9,7 @@
 2. Start the server
 
    ```bash
-    node start
+    node server.js
    ```
    To run the server as the developer mode:
    ```bash

@@ -30,6 +30,9 @@ export default function HomeScreen() {
   } = useCalendar(MOCK_EVENTS);
   
   const [events, setEvents] = useState([]);
+  const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
   // This method fetches the events from the database.
   useEffect(() => {
     async function fetchAuth() {
@@ -81,29 +84,11 @@ export default function HomeScreen() {
 
   function eventList() {
     return events.map((event) => (
-      <View key={event._id} style={styles.eventCard}>
-        <View style={styles.eventHeader}>
-          <View>
-            <Text style={styles.eventTitle}>{event.name}</Text>
-            <Text style={styles.eventCategory}>{event.tags}</Text>
-          </View>
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventDetails}>Start: {event.start_time}</Text>
-            <Text style={styles.eventDetails}>End: {event.end_time}</Text>
-            <Text style={styles.eventDetails}>Location: {event.location}</Text>
-          </View>
-        </View>
-        <Text style={styles.eventDescription}>{event.description}</Text>
-        {event.image && (
-          <Image source={{ uri: profileImage || "https://via.placeholder.com/80" }} style={styles.profilePhoto} />
-        )}
-        <Text style={styles.eventLimit}>{event.cur_joined} / {event.participant_limit}</Text>
-      </View>
-    ))
+      <TouchableOpacity key={event._id} onPress={() => setSelectedEvent(event)}>
+        <EventCard event={event} />
+      </TouchableOpacity>
+    ));
   }
-
-  const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
@@ -131,7 +116,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* Create event modal */}
       <Modal
-        animationType="slide"
+        animationType="none"
         transparent={true}
         visible={isCreateEventFormVisible}
         onRequestClose={() => setIsCreateEventFormVisible(false)}
@@ -141,6 +126,7 @@ export default function HomeScreen() {
 
       {/* Event details modal (Opens when event card is clicked) */}
       <Modal
+        animationType="slide"
         transparent={true}
         visible={!!selectedEvent}
         onRequestClose={() => setSelectedEvent(null)}
@@ -238,12 +224,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '500',
   },
-  eventCard: {
-    backgroundColor: '#E5E7EB',
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
   eventHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -282,5 +262,3 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
-
-// export default HomeScreen;

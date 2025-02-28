@@ -18,4 +18,5 @@ const UserSchema = new Schema({
   joinedEvents: [{ type: Number, ref: "Event", default: [] }]
 }); 
 
-module.exports = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+module.exports = User;

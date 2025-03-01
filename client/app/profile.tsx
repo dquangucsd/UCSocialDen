@@ -36,7 +36,7 @@ export default function Profile() {
           }
         } catch (error) {
           console.error("Error decoding JWT:", error);
-          setProfileImage("https://via.placeholder.com/80"); // 解析失败使用默认头像
+          setProfileImage("https://via.placeholder.com/80");
         }
       }
     }

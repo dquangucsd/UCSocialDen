@@ -10,6 +10,8 @@ require("./config/passport")
 
 const PORT = process.env.PORT;
 const app = express();
+// app.use(express.json({ limit: "10mb" }));
+// app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(express.json()); 
 app.use(cors());
 
@@ -19,8 +21,8 @@ connectDB();
 //   res.send("Hello from Express + Mongoose!");
 // });
 app.use(cors({
-  origin: "http://localhost:8081",  // 只允许前端访问
-  credentials: true,  // 允许带 cookie、认证头等信息
+  origin: "http://localhost:8081",  
+  credentials: true,  
 }));
 
 app.use(passport.initialize());

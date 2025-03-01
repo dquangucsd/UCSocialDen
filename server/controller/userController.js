@@ -3,9 +3,6 @@ const { S3Client, PutObjectCommand , DeleteObjectCommand} = require("@aws-sdk/cl
 const User = require("../models/userModel");
 const Event = require("../models/eventModel");
 
-const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
-exports.upload = upload.single("profile_image");
 
 
 
@@ -108,8 +105,8 @@ const updateUserIntro = async (req, res) => {
   }
 };
 
-
-const uploadimage = async(req,res) => {
+// updateiamge with _id of user
+const updateimage = async(req,res) => {
   try{
     const {email} = req.params;
     if (!req.file){
@@ -167,55 +164,35 @@ const uploadimage = async(req,res) => {
   }
 }
 
+// uploadImage, helper function for register
+const uploadImage = async (file) => {
+  try {
+    if (!file) {
+      console.log("No file received");
+      return null;
+    }
+    const fileName = `avatars/${Date.now().toString()}-${file.originalname}`;
+    const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
 
-
-// const register = async (req, res) => {
-//   try {
-//     const { email, name, password } = req.body;
-//     const newUser = await User.create({ email, name, password });
-//     res.status(201).json(newUser);
-//   } catch (error) {
-//     res.status(500).json({ error: "Failed to register" });
-//   }
-// };
-
-// const register = async (req, res) => {
-//   try {
-//     const { email, name, major, pid, bio, profilePhoto } = req.body;
-
-//     if (!email || !name || !major || !pid) {
-//       return res.status(400).json({ success: false, message: "All required fields must be filled out." });
-//     }
-
-//     let user = await User.findOne({ email });
-//     if (user) {
-//       return res.status(400).json({ success: false, message: "User already exists." });
-//     }
-
-//     user = new User({
-//       email,
-//       name,
-//       major,
-//       pid,
-//       bio,
-//       profile_photo: profilePhoto || null, // If no profile photo, keep it null
-//     });
-
-//     await user.save();
-    
-//     res.status(201).json({ success: true, message: "User registered successfully", user });
-//   } catch (error) {
-//     console.error("Registration Error:", error);
-//     res.status(500).json({ success: false, message: "Failed to register user" });
-//   }
-// };
-
-
+    await s3.send(new PutObjectCommand(uploadParams));
+    const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    return s3Url;
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    return null;
+  }
+};
+// register main function 
 const register = async (req, res) => {
   try {
-    const { email, name, major, pid, bio = "" } = req.body;
+    const { email, name, major, bio = "" } = req.body;
 
-    if (!email || !name || !major || !pid) {
+    if (!email || !name || !major) {
       return res.status(400).json({ success: false, message: "All required fields must be filled out." });
     }
 
@@ -225,28 +202,22 @@ const register = async (req, res) => {
     }
 
     let profilePhoto = null;
+    // get image uri.
     if (req.file) {
-      try {
-        const uploadResponse = await uploadimage(req, res);
-        if (uploadResponse.success) {
-          profilePhoto = uploadResponse.user.profile_photo;
-        } else {
-          return res.status(500).json({ success: false, message: "Profile photo upload failed." });
-        }
-      } catch (error) {
-        console.error("Profile Photo Upload Error:", error);
-        return res.status(500).json({ success: false, message: "Error uploading profile photo." });
+      const uploadResponse = await uploadImage(req.file);
+      console.log(uploadResponse);
+      if (!uploadResponse) {
+        return res.status(500).json({ success: false, message: "Profile photo upload failed." });
       }
+      profilePhoto = uploadResponse;
     }
-    const _id = email;
 
     user = new User({
       _id: email,
       email,
       name,
       major,
-      pid,
-      bio: bio || "",
+      bio,
       profile_photo: profilePhoto,
     });
 
@@ -266,8 +237,8 @@ module.exports = {
   getUsers,
   getUserByEmail,
   updateUserIntro,
-  Upload: upload.single("profile_image"), 
-  uploadimage,
+  updateimage,
+  uploadImage,
   joinEvent,
   register
 };

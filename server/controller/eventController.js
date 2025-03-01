@@ -1,4 +1,5 @@
 const Event = require("../models/eventModel");
+const User = require("../models/userModel");
 
 //get all events
 const getAllEvents = async (req, res) => {
@@ -26,11 +27,22 @@ const createEvent = async (req, res) => {
     // get current time as create_time
     newevent['create_time'] = new Date();
 
-    // TODO: Replace the author with real user
-    newevent['author'] = "null";
+    // Replace the author with the user
+    newevent['author'] = req.params.userID;
 
-    console.log(newevent);
+    console.log("Creating a new event", newevent);
     const newEvent = await Event.create(newevent);
+
+    // Add the event to the user's joinedEvents
+    try{
+      const user= await User.findById(req.params.userID);
+      user.joinedEvents.push(newEvent._id);
+      await user.save();
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Failed to add the event to the user's joinedEvents" });
+    }
+
     res.status(201).json(newEvent);
   } catch (error) {
     console.log(error);
@@ -38,81 +50,47 @@ const createEvent = async (req, res) => {
   }
 };
 
-// 根据 ID 获取单个事件
-const getEventById = async (req, res) => {
+// get events by many IDs (IDs come from the user's joinedEvents)
+const getEventsByIds = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ error: "事件未找到" });
-    res.json(event);
+    // console.log(req.params.userID);
+    const user = await User.findById(req.params.userID).populate("joinedEvents")
+    if (!user) return res.status(404).json({ error: "Failed to find the user" });
+    res.status(200).json(user.joinedEvents);
   } catch (error) {
-    res.status(500).json({ error: "查询事件失败" });
+    res.status(500).json({ error: "Failed to fetch joined events" });
   }
 };
 
-// 更新事件
-const updateEvent = async (req, res) => {
-  try {
-    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedEvent) return res.status(404).json({ error: "事件未找到" });
-    res.json(updatedEvent);
-  } catch (error) {
-    res.status(500).json({ error: "更新事件失败" });
-  }
-};
+// const getEventById = async (req, res) => {
+//   try {
+//     const event = await Event.findById(req.params.id);
+//     if (!event) return res.status(404).json({ error: "事件未找到" });
+//     res.json(event);
+//   } catch (error) {
+//     res.status(500).json({ error: "查询事件失败" });
+//   }
+// };
 
-// 删除事件
-const deleteEvent = async (req, res) => {
-  try {
-    const deletedEvent = await Event.findByIdAndDelete(req.params.id);
-    if (!deletedEvent) return res.status(404).json({ error: "事件未找到" });
-    res.json({ message: "事件删除成功" });
-  } catch (error) {
-    res.status(500).json({ error: "删除事件失败" });
-  }
-};
+// const updateEvent = async (req, res) => {
+//   try {
+//     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (!updatedEvent) return res.status(404).json({ error: "事件未找到" });
+//     res.json(updatedEvent);
+//   } catch (error) {
+//     res.status(500).json({ error: "更新事件失败" });
+//   }
+// };
+
+// const deleteEvent = async (req, res) => {
+//   try {
+//     const deletedEvent = await Event.findByIdAndDelete(req.params.id);
+//     if (!deletedEvent) return res.status(404).json({ error: "事件未找到" });
+//     res.json({ message: "事件删除成功" });
+//   } catch (error) {
+//     res.status(500).json({ error: "删除事件失败" });
+//   }
+// };
 
 
-module.exports = {getAllEvents, createEvent};
-
-
-/* 
-let results=[
-        { 
-          id: '1', 
-          title: 'Event Name', 
-          category: 'Events/food',
-          date: '2023-10-02',
-          start: '7:00 PM',
-          end: '9:00 PM', 
-          location: 'Arteazen', 
-          description: 'Hey guys, I want to get boba at Arteazen around 7...' 
-        },
-        { 
-          id: '2', 
-          title: 'Event Name', 
-          category: 'Events/sports',
-          date: '2023-10-05',
-          start: '7:00 PM', 
-          end: '9:00 PM', 
-          location: 'Arteazen', 
-          description: 'Hey guys, I want to get boba at Arteazen around 7...' 
-        },
-        { 
-          id: '3', 
-          title: 'Event Name', 
-          category: 'Events/sports',
-          date: '2023-10-10',
-          start: '7:00 PM', 
-          end: '9:00 PM', 
-          location: 'Arteazen', 
-          description: 'Hey guys, I want to get boba at Arteazen around 7...',
-          image: true 
-        },
-      ];
-    // res.json(results);
-    return results;
-  }
-};
-
-export { eventController };
-*/
+module.exports = {getAllEvents, createEvent, getEventsByIds};

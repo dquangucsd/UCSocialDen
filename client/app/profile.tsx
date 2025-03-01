@@ -7,13 +7,13 @@ import Sidebar from "../components/layout/Sidebar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {jwtDecode} from "jwt-decode"; 
 
-
+const SERVER_PORT = 5002; //process.env.PORT;
 
 export default function Profile() {
   const router = useRouter();
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [userData, setUserData] = useState<any>(null);
-
+  const [userData, setUserData] = useState<any>(null); // 存储用户数据
+  const [joinedEvents, setJoinedEvents] = useState([]);
   useEffect(() => {
     async function fetchProfileImage() {
       const token = await AsyncStorage.getItem("jwt");
@@ -36,11 +36,41 @@ export default function Profile() {
           }
         } catch (error) {
           console.error("Error decoding JWT:", error);
-          setProfileImage("https://via.placeholder.com/80");
+          setProfileImage("https://via.placeholder.com/80"); // 解析失败使用默认头像
         }
       }
     }
-  
+
+    async function getJoinedEvents() {
+      console.log("Fetching user joined events...");
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        console.warn("No JWT found in AsyncStorage");
+        return;
+      }
+      const decodedToken: any = jwtDecode(token);
+      // console.log("Decoded Token:", decodedToken);
+      if (!decodedToken.email) {
+        console.warn("No email found in JWT");
+        return;
+      }
+      
+      const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      // console.log("response:", response);
+      const results = await response.json();
+      const sortedEvents = results.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setJoinedEvents(sortedEvents);
+    }
+    
+    getJoinedEvents()
     fetchProfileImage();
   }, []);
   
@@ -51,7 +81,7 @@ export default function Profile() {
       <TopNavBar activeTab="Profile" />
 
       <View style={styles.mainContent}>
-        <Sidebar />
+        <Sidebar events={joinedEvents}/>
 
         {/* Profile Content */}
         <View style={styles.profileSection}>

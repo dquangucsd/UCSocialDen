@@ -1,6 +1,6 @@
 const passport = require("passport"); // passport.js is a middleware for authentication
 const GoogleStrategy = require("passport-google-oauth20").Strategy; // google strategy for auth2.0
-const dotenv = require("dotenv");  // dotenv is a module that loads environment variables 
+// const dotenv = require("dotenv");  // dotenv is a module that loads environment variables 
                                    // from a .env file into process.env. 
                                    //.env is a file that contains environment variables, and 
                                    // it contains sensitive information like passwords and api keys.
@@ -17,7 +17,7 @@ const User = require("../models/userModel");
 */
 
 
-dotenv.config();
+// dotenv.config();
 
 passport.use(
     new GoogleStrategy(

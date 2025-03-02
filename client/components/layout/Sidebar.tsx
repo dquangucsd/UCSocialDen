@@ -1,13 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, TouchableWithoutFeedback } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS } from '../../utils/constants';
-import { useCalendar } from '../../hooks/useCalendar';
 
 export default function Sidebar({ events }) {
   const [isOpen, setIsOpen] = useState(false);
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
+
+  // Function to convert ISO 8601 to YYYY-MM-DD
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };  
+  
+  // Create a markedDates object
+  const markedDates = events.reduce((acc, event) => {
+    const date = formatDate(event.start_time); // Ensure event.date is in 'YYYY-MM-DD' format
+    // const date = '2025-03-01'; // Placeholder date
+    acc[date] = {
+      selected: true,
+      selectedColor: '#00B0FF' // 设置您希望的背景颜色
+    };
+    return acc;
+  }, {});
 
   // Don't render the main sidebar at all if mobile and not open
   if (isMobile && !isOpen) {
@@ -44,7 +63,7 @@ export default function Sidebar({ events }) {
               <Text style={styles.todayButtonText}>Today</Text>
             </TouchableOpacity>
           </View>
-          <Calendar />
+          <Calendar markedDates={markedDates} />
         </View>
       </View>
     </>
@@ -123,4 +142,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-}); 
+});

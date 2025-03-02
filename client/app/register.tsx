@@ -81,13 +81,13 @@ export default function RegisterScreen() {
                     value={major} 
                     onChangeText={setMajor} 
                 />
-                <TextInput 
+                {/* <TextInput 
                     style={styles.input} 
                     placeholder="PID" 
                     value={pid} 
                     onChangeText={setPid} 
                     keyboardType="numeric"
-                />
+                /> */}
                 <TextInput 
                     style={styles.input} 
                     placeholder="Email" 

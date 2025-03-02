@@ -11,8 +11,15 @@ export default function OAuthHandler() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get("token");
                 const user = urlParams.get("user");
-
-                if (token && user) {
+                const New = urlParams.get("newUser") === "true";
+                console.log(token);
+                // handle New User -> to register page
+                if (token && New){
+                    await AsyncStorage.setItem("jwt", token);
+                    //await AsyncStorage.setItem("user", user);
+                    router.replace("/register");
+                }
+                else if (token && user) {
                     await AsyncStorage.setItem("jwt", token);
                     await AsyncStorage.setItem("user", user);
 

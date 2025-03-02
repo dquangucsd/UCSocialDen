@@ -33,6 +33,7 @@ passport.use(
                 console.log("Google Profile:", profile);
                 
                 const email = profile.emails[0].value;
+                const Name = profile.name; 
                 // TODO: check is ucsd.edu email
                 // TODO: figure out how jwt works
                 // TODO: check token variables like email and names
@@ -43,9 +44,18 @@ passport.use(
 
                 let user = await User.findOne({_id: email}); // check the email in our database
                 if (!user){
-                    console.log("False. Email doesn't exist in google"); // there is no google account in our database that matches, 
+                    // new user still pass jwt to frontend. 
+                    const token = jwt.sign(
+                        {
+                            email: email,
+                            name : Name
+                        },
+                        process.env.JWT_SECRET,
+                        { expiresIn: "30min"}
+                    )
+                    console.log("New User"); // there is no google account in our database that matches, 
                                                                          // then they should register.
-                    return done(null, {newUser: true, email}); // return condition to register to auth.js
+                    return done(null, {newUser: true, token}); // return condition to register to auth.js
                 }
                 
                 const token = jwt.sign( // here, the email is in our database, then we can generate a token and log the user in

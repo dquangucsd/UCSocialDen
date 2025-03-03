@@ -16,56 +16,59 @@ export default function Profile() {
   const [joinedEvents, setJoinedEvents] = useState([]);
   useEffect(() => {
     async function fetchProfileImage() {
-      const token = await AsyncStorage.getItem("jwt");
-      console.log("token:", token);
-      if (token) {
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      //const token = await AsyncStorage.getItem("jwt");
+      //console.log("token:", token);
+      if (user) {
         try {
-          const decodedToken: any = jwtDecode(token);
-          console.log("Decoded Token:", decodedToken);
+          //const decodedToken: any = jwtDecode(token);
+          //console.log("Decoded Token:", decodedToken);
 
-          // 从后端获取用户详细信息
-          const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
-          if (response.ok) {
-            const userDetails = await response.json();
+          //const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
+          //if (response.ok) {
+            //const userDetails = await response.json();
             
             setUserData({
-              name: decodedToken.name || "Unknown User",
-              email: decodedToken.email || "No Email Provided",
-              major: userDetails.major || "Not specified",
-              intro: userDetails.self_intro || "No introduction provided",
+              name: user.user.name || "Unknown User",
+              email: user.user._id || "No Email Provided",
+              major: user.user.major || "Not specified",
+              intro: user.user.self_intro || "No introduction provided",
             });
 
-            if (decodedToken.image) {
-              console.log("Profile Image URL:", decodedToken.image);
-              setProfileImage(decodedToken.image); 
+            if (user.user.profile_photo) {
+              //console.log("Profile Image URL:", decodedToken.image);
+              setProfileImage(user.user.profile_photo); 
             } else {
               console.warn("No image found in JWT");
               setProfileImage("https://via.placeholder.com/80"); 
             }
-          }
+          //}
         } catch (error) {
-          console.error("Error decoding JWT:", error);
+          console.error("Error", error);
           setProfileImage("https://via.placeholder.com/80");
         }
       }
     }
 
     async function getJoinedEvents() {
-      console.log("Fetching user joined events...");
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
-        console.warn("No JWT found in AsyncStorage");
-        return;
-      }
-      const decodedToken: any = jwtDecode(token);
-      // console.log("Decoded Token:", decodedToken);
-      if (!decodedToken.email) {
-        console.warn("No email found in JWT");
-        return;
-      }
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      // console.log("Fetching user joined events...");
+      // const token = await AsyncStorage.getItem("jwt");
+      // if (!token) {
+      //   console.warn("No JWT found in AsyncStorage");
+      //   return;
+      // }
+      // const decodedToken: any = jwtDecode(token);
+      // // console.log("Decoded Token:", decodedToken);
+      // if (!decodedToken.email) {
+      //   console.warn("No email found in JWT");
+      //   return;
+      // }
       
-      const user_ID = decodedToken.email;
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+      // const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user.user._id}`);
 
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;

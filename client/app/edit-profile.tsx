@@ -20,22 +20,29 @@ export default function EditProfileScreen() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      //const token = await AsyncStorage.getItem("jwt");
+      //console.log("Major field:", user?.user?.major);
+      // if (!userString) {
+      //   console.error("User not found in AsyncStorage");
+      //   return;
+      // }
+      if (!userString) {
         router.replace("/login");
         return;
       }
-
+      //console.log(user.profile_photo);
       try {
-        const decodedToken: any = jwtDecode(token);
-        const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
+        //const decodedToken: any = jwtDecode(token);
+        //const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
         
-        if (response.ok) {
-          const userDetails = await response.json();
-          setMajor(userDetails.major || "");
-          setBio(userDetails.self_intro || "");
-          setProfileImage(userDetails.profile_photo || null);
-        }
+        //if (response.ok) {
+          //const userDetails = await response.json();
+          setMajor(user.user.major|| "");
+          setBio(user.user.self_intro || "");
+          setProfileImage(user.user.profile_photo || null);
+        //}
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

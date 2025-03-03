@@ -89,7 +89,7 @@ export default function EditProfileScreen() {
 
       //const decodedToken: any = jwtDecode(token);
       
-      // 首先更新头像（如果有）
+      // there is image
       if (selectedImage) {        
         const imageFormData = new FormData();
         const imageBlob = await convertUriToBlob(selectedImage);
@@ -112,7 +112,7 @@ export default function EditProfileScreen() {
         }
       }
       
-      // 然后更新个人资料信息
+      // update user info
       const introResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/${user.user._id}/intro`, {
         method: "PUT",
         headers: {

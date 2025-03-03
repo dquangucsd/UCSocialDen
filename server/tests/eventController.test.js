@@ -8,25 +8,25 @@ describe('Event Controller', () => {
   let mongoServer;
 
   beforeAll(async () => {
-    // 启动内存中的 MongoDB 实例
+    //initialize the in-memory MongoDB instance
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
   });
 
   afterAll(async () => {
-    // 断开连接并停止内存中的 MongoDB 实例
+    //disconnect from the in-memory MongoDB instance
     await mongoose.disconnect();
     await mongoServer.stop();
   });
 
   afterEach(async () => {
-    // 每次测试后清理所有事件
+    //clean up the database after each test
     await Event.deleteMany();
     await User.deleteMany();
   });
   
-  // 添加一个简单的测试，确保测试套件能够运行
+  //add a simple test to ensure the test suite can run
   it('should pass a simple test', () => {
     expect(true).toBe(true);
   });

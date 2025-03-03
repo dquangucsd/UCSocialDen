@@ -18,10 +18,10 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
   const [CurrentProfileImage, setCurrentProfileImage] = useState<string | null >(null);
 
   useEffect(() => {
-    // 当 profileImage 从上下文更新时，更新当前显示的头像
+    // update the current profile image from the context
     setCurrentProfileImage(profileImage || null);
     
-    // 备用方案：直接从 AsyncStorage 获取
+    
     const getProfileImage = async () => {
       const userString = await AsyncStorage.getItem('user');
       if (userString) {

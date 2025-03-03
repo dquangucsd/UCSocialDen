@@ -122,8 +122,11 @@ export default function Profile() {
 
           <View style={styles.settingsSection}>
             <Text style={styles.sectionTitle}>Account Setting</Text>
-            <TouchableOpacity style={styles.settingItem}>
-              <Text style={styles.settingText}>Reset Passwords</Text>
+            <TouchableOpacity 
+              style={styles.settingItem}
+              onPress={() => router.push('/edit-profile')}
+            >
+              <Text style={styles.settingText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
         </View>

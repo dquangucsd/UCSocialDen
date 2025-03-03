@@ -5,6 +5,8 @@ import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import TopNavBar from "../components/layout/TopNavBar";
+import { AuthContext } from "../contexts/AuthContext";
+import { useContext } from "react";
 import * as ImagePicker from 'expo-image-picker';
 
 const SERVER_PORT = 5002;
@@ -24,7 +26,8 @@ export default function EditProfileScreen() {
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { updateUserData } = useContext(AuthContext) || {};
+  
   useEffect(() => {
     const fetchUserData = async () => {
       const userString = await AsyncStorage.getItem("user");
@@ -101,6 +104,12 @@ export default function EditProfileScreen() {
         if (!imageResponse.ok) {
           console.error("Failed to update profile image");
         }
+        else{
+          const imageData = await imageResponse.json();
+          if (imageData.success &&imageData.user && imageData.user.profile_photo){
+              user.user.profile_photo = imageData.user.profile_photo;
+          }
+        }
       }
       
       // 然后更新个人资料信息
@@ -124,11 +133,14 @@ export default function EditProfileScreen() {
 
       user.user.major = major;
       user.user.intro = bio;
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/image/${user.user._id}`);
-      if (!response){
-        console.log("error, no image response");
-      }
-      user.user.profileImage = response;
+      // const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/image/${user.user._id}`);
+      // if (!response){
+      //   console.log("error, no image response");
+      // }
+
+      // const data = await response.json();
+      //console.log(data.profile_photo);
+      //user.user.profileImage = data.profile_photo;
 
       // const userString = await AsyncStorage.getItem("user");
       // const user = userString ? JSON.parse(userString) : null;
@@ -137,6 +149,13 @@ export default function EditProfileScreen() {
       // const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/image/${email}`);
       // user.user.profileImage = 
       await AsyncStorage.setItem("user", JSON.stringify(user));
+      if (updateUserData) {
+        updateUserData({
+          ...user.user,
+          profile_photo: user.user.profile_photo
+        });
+      }
+      console.log("user", JSON.stringify(user));
       console.log("Profile updated successfully");
       //Redirect()
       //router.back();

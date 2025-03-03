@@ -23,16 +23,25 @@ export default function Profile() {
           const decodedToken: any = jwtDecode(token);
           console.log("Decoded Token:", decodedToken);
 
-          setUserData({
-            name: decodedToken.name || "Unknown User",
-            email: decodedToken.email || "No Email Provided",
-          });
-          if (decodedToken.image) {
-            console.log("Profile Image URL:", decodedToken.image);
-            setProfileImage(decodedToken.image); 
-          } else {
-            console.warn("No image found in JWT");
-            setProfileImage("https://via.placeholder.com/80"); 
+          // 从后端获取用户详细信息
+          const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
+          if (response.ok) {
+            const userDetails = await response.json();
+            
+            setUserData({
+              name: decodedToken.name || "Unknown User",
+              email: decodedToken.email || "No Email Provided",
+              major: userDetails.major || "Not specified",
+              intro: userDetails.self_intro || "No introduction provided",
+            });
+
+            if (decodedToken.image) {
+              console.log("Profile Image URL:", decodedToken.image);
+              setProfileImage(decodedToken.image); 
+            } else {
+              console.warn("No image found in JWT");
+              setProfileImage("https://via.placeholder.com/80"); 
+            }
           }
         } catch (error) {
           console.error("Error decoding JWT:", error);

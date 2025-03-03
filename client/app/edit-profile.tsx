@@ -9,6 +9,13 @@ import * as ImagePicker from 'expo-image-picker';
 
 const SERVER_PORT = 5002;
 
+// set uri to binary file
+const convertUriToBlob = async (uri: string): Promise<Blob> => {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+  return blob;
+};
+
 export default function EditProfileScreen() {
   const router = useRouter();
   const [major, setMajor] = useState("");
@@ -33,7 +40,7 @@ export default function EditProfileScreen() {
         if (response.ok) {
           const userDetails = await response.json();
           setMajor(userDetails.major || "");
-          setBio(userDetails.self_intro || "");
+          setBio(userDetails.intro || "");
           setProfileImage(userDetails.profile_photo || null);
         }
       } catch (error) {
@@ -53,7 +60,8 @@ export default function EditProfileScreen() {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setSelectedImage(result.assets[0]);
+      console.log("Selected image:", result.assets[0]);
+      setSelectedImage(result.assets[0].uri);
       setProfileImage(result.assets[0].uri);
     }
   };
@@ -69,21 +77,14 @@ export default function EditProfileScreen() {
       const decodedToken: any = jwtDecode(token);
       
       // 首先更新头像（如果有）
-      if (selectedImage) {
-        const imageUri = selectedImage.uri;
-        const filename = imageUri.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename || '');
-        const type = match ? `image/${match[1]}` : 'image';
-        
+      if (selectedImage) {        
         const imageFormData = new FormData();
-        imageFormData.append("profile_image", {
-          uri: imageUri,
-          name: filename,
-          type,
-        } as any);
-        
-        const imageResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/upload/${decodedToken.email}`, {
-          method: "POST",
+        const imageBlob = await convertUriToBlob(selectedImage);
+        imageFormData.append("profilePhoto", imageBlob, "profile.jpg");
+
+        console.log("Uploading image:", imageFormData);
+        const imageResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/profile_photo/${decodedToken.email}`, {
+          method: "PUT",
           body: imageFormData
         });
         

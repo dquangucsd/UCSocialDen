@@ -32,7 +32,7 @@ export default function Profile() {
               name: decodedToken.name || "Unknown User",
               email: decodedToken.email || "No Email Provided",
               major: userDetails.major || "Not specified",
-              intro: userDetails.self_intro || "No introduction provided",
+              intro: userDetails.intro || "No introduction provided",
             });
 
             if (decodedToken.image) {

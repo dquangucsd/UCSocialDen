@@ -3,28 +3,28 @@ name: Run Backend Tests
 on: 
   push:
     branches:
-      - main  # push
+      - main
   pull_request:
     branches:
-      - main  # pull 
+      - main
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # 在 ubuntu
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # get 
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # node
+          node-version: '18'
 
       - name: Install dependencies
         run: |
           cd server
-          npm install  # add dependencies
+          npm install
 
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -44,8 +44,9 @@ jobs:
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
           echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
           echo "CALLBACK_URL=http://localhost:5002/auth/google/callback" >> .env
+          echo "PORT=5002" >> .env
 
       - name: Run Tests
         run: |
           cd server
-          npx mocha tests/**/*.js --timeout 10000  # run
+          npm test 

@@ -16,47 +16,59 @@ export default function Profile() {
   const [joinedEvents, setJoinedEvents] = useState([]);
   useEffect(() => {
     async function fetchProfileImage() {
-      const token = await AsyncStorage.getItem("jwt");
-      console.log("token:", token);
-      if (token) {
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      //const token = await AsyncStorage.getItem("jwt");
+      //console.log("token:", token);
+      if (user) {
         try {
-          const decodedToken: any = jwtDecode(token);
-          console.log("Decoded Token:", decodedToken);
+          //const decodedToken: any = jwtDecode(token);
+          //console.log("Decoded Token:", decodedToken);
 
-          setUserData({
-            name: decodedToken.name || "Unknown User",
-            email: decodedToken.email || "No Email Provided",
-          });
-          if (decodedToken.image) {
-            console.log("Profile Image URL:", decodedToken.image);
-            setProfileImage(decodedToken.image); 
-          } else {
-            console.warn("No image found in JWT");
-            setProfileImage("https://via.placeholder.com/80"); 
-          }
+          //const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}`);
+          //if (response.ok) {
+            //const userDetails = await response.json();
+            
+            setUserData({
+              name: user.user.name || "Unknown User",
+              email: user.user._id || "No Email Provided",
+              major: user.user.major || "Not specified",
+              intro: user.user.intro || "No introduction provided",
+            });
+
+            if (user.user.profile_photo) {
+              //console.log("Profile Image URL:", decodedToken.image);
+              setProfileImage(user.user.profile_photo); 
+            } else {
+              console.warn("No image found in JWT");
+              setProfileImage("https://via.placeholder.com/80"); 
+            }
+          //}
         } catch (error) {
-          console.error("Error decoding JWT:", error);
+          console.error("Error", error);
           setProfileImage("https://via.placeholder.com/80");
         }
       }
     }
 
     async function getJoinedEvents() {
-      console.log("Fetching user joined events...");
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
-        console.warn("No JWT found in AsyncStorage");
-        return;
-      }
-      const decodedToken: any = jwtDecode(token);
-      // console.log("Decoded Token:", decodedToken);
-      if (!decodedToken.email) {
-        console.warn("No email found in JWT");
-        return;
-      }
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      // console.log("Fetching user joined events...");
+      // const token = await AsyncStorage.getItem("jwt");
+      // if (!token) {
+      //   console.warn("No JWT found in AsyncStorage");
+      //   return;
+      // }
+      // const decodedToken: any = jwtDecode(token);
+      // // console.log("Decoded Token:", decodedToken);
+      // if (!decodedToken.email) {
+      //   console.warn("No email found in JWT");
+      //   return;
+      // }
       
-      const user_ID = decodedToken.email;
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+      // const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user.user._id}`);
 
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
@@ -84,37 +96,44 @@ export default function Profile() {
         <Sidebar events={joinedEvents}/>
 
         {/* Profile Content */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileHeader}>
-            <View style={styles.profilePhotoContainer}>
-            <Image 
-  source={{ uri: profileImage || "https://via.placeholder.com/80" }} 
-  style={styles.profilePhoto}
-/>
-            </View>
-            <View style={styles.profileInfo}>
+        <View style={styles.contentContainer}>
+          <ScrollView style={styles.profileSection}>
+            <View style={styles.profileContent}>
+              <View style={styles.photoContainer}>
+                <Image 
+                  source={{ uri: profileImage || "https://via.placeholder.com/300" }} 
+                  style={styles.profilePhoto} 
+                />
+              </View>
+              
               <Text style={styles.name}>{userData?.name || "Name"}</Text>
-              <View style={styles.stats}>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>{userData?.tag?.join(", ") || "Tag"}</Text>
+              
+              <View style={styles.infoContainer}>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Email:</Text>
+                  <Text style={styles.infoValue}>{userData?.email || "Email"}</Text>
                 </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>{userData?.rating || "Rating"}</Text>
+                
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Major:</Text>
+                  <Text style={styles.infoValue}>{userData?.major || "Major"}</Text>
                 </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statLabel}>{userData?.number_post || "# Posts"}</Text>
+                
+                <View style={styles.bioContainer}>
+                  <Text style={styles.bioLabel}>About Me:</Text>
+                  <Text style={styles.bioText}>{userData?.intro || "No introduction provided"}</Text>
                 </View>
               </View>
-              <Text style={styles.email}>{userData?.email || "Email"}</Text>
-              <Text style={styles.major}>{userData?.major || "Major"}</Text>
-              <Text style={styles.selfIntro}>{userData?.intro || "Self Intro"}</Text>
             </View>
-          </View>
-
-          <View style={styles.settingsSection}>
-            <Text style={styles.sectionTitle}>Account Setting</Text>
-            <TouchableOpacity style={styles.settingItem}>
-              <Text style={styles.settingText}>Reset Passwords</Text>
+          </ScrollView>
+          
+          {/* Edit Profile Button at the bottom */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => router.push('/edit-profile')}
+            >
+              <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -132,73 +151,93 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
   },
+  contentContainer: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
   profileSection: {
     flex: 1,
-    padding: 20,
   },
-  profileHeader: {
-    flexDirection: "row",
+  profileContent: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  photoContainer: {
+    alignItems: 'center',
     marginBottom: 30,
   },
-  profilePhotoContainer: {
-    marginRight: 30,
-  },
   profilePhoto: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: 250,
+    height: 250,
+    borderRadius: 150,
     backgroundColor: "#D1D5DB",
   },
-  profileInfo: {
-    flex: 1,
-  },
   name: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 25,
+    color: COLORS.indigo,
   },
-  stats: {
-    flexDirection: "row",
-    marginBottom: 15,
-  },
-  stat: {
-    backgroundColor: "#E5E7EB",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    marginRight: 10,
-  },
-  statLabel: {
-    color: "#4B5563",
-  },
-  email: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  major: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  selfIntro: {
-    fontSize: 16,
-    color: "#4B5563",
-  },
-  settingsSection: {
-    backgroundColor: "#E5E7EB",
+  infoContainer: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
     padding: 20,
-    borderRadius: 8,
-    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
+  infoRow: {
+    flexDirection: 'row',
     marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingBottom: 10,
   },
-  settingItem: {
-    paddingVertical: 10,
+  infoLabel: {
+    width: 100,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.indigo,
   },
-  settingText: {
-    fontSize: 16,
-    color: "#4B5563",
+  infoValue: {
+    flex: 1,
+    fontSize: 18,
+    color: '#000000',
+  },
+  bioContainer: {
+    marginTop: 10,
+  },
+  bioLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.indigo,
+    marginBottom: 10,
+  },
+  bioText: {
+    fontSize: 18,
+    color: '#000000',
+    lineHeight: 26,
+  },
+  buttonContainer: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  editButton: {
+    backgroundColor: COLORS.indigo,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  editButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

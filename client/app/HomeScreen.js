@@ -78,19 +78,21 @@ export default function HomeScreen() {
 
     async function getJoinedEvents() {
       console.log("Fetching user joined events...");
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
-        console.warn("No JWT found in AsyncStorage");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      //const token = await AsyncStorage.getItem("jwt");
+      if (!userString) {
+        console.warn("No user found in AsyncStorage");
         return;
       }
-      const decodedToken: any = jwtDecode(token);
+      //const decodedToken: any = jwtDecode(token);
       // console.log("Decoded Token:", decodedToken);
-      if (!decodedToken.email) {
-        console.warn("No email found in JWT");
-        return;
-      }
+      // if (!decodedToken.email) {
+      //   console.warn("No email found in JWT");
+      //   return;
+      // }
       
-      const user_ID = decodedToken.email;
+      const user_ID = user.user._id;
       const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
 
       if (!response.ok) {

@@ -33,7 +33,7 @@ export default function Profile() {
               name: user.user.name || "Unknown User",
               email: user.user._id || "No Email Provided",
               major: user.user.major || "Not specified",
-              intro: user.user.self_intro || "No introduction provided",
+              intro: user.user.intro || "No introduction provided",
             });
 
             if (user.user.profile_photo) {

@@ -25,6 +25,18 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getImageByEmail = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.email, "-password");
+    if (!user) {
+      return {success: false, message: 'User not found'};
+    }
+    res.status(200).json(user.profile_photo);
+  }
+  catch (error) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+}
 
 const getUserByEmail = async (req, res) => {
   try {
@@ -217,5 +229,6 @@ module.exports = {
   uploadImage,
   joinEvent,
   register,
-  updateImage
+  updateImage,
+  getImageByEmail
 };

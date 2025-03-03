@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from "react-native";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
@@ -29,6 +29,7 @@ export default function EditProfileScreen() {
     const fetchUserData = async () => {
       const userString = await AsyncStorage.getItem("user");
       const user = userString ? JSON.parse(userString) : null;
+      
       //const token = await AsyncStorage.getItem("jwt");
       //console.log("Major field:", user?.user?.major);
       // if (!userString) {
@@ -47,7 +48,7 @@ export default function EditProfileScreen() {
         //if (response.ok) {
           //const userDetails = await response.json();
           setMajor(user.user.major|| "");
-          setBio(user.user.self_intro || "");
+          setBio(user.user.intro || "");
           setProfileImage(user.user.profile_photo || null);
         //}
       } catch (error) {
@@ -78,10 +79,12 @@ export default function EditProfileScreen() {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) throw new Error("No token found");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      //const token = await AsyncStorage.getItem("jwt");
+      if (!user) throw new Error("No token found");
 
-      const decodedToken: any = jwtDecode(token);
+      //const decodedToken: any = jwtDecode(token);
       
       // 首先更新头像（如果有）
       if (selectedImage) {        
@@ -90,7 +93,7 @@ export default function EditProfileScreen() {
         imageFormData.append("profilePhoto", imageBlob, "profile.jpg");
 
         console.log("Uploading image:", imageFormData);
-        const imageResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/profile_photo/${decodedToken.email}`, {
+        const imageResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/profile_photo/${user.user._id}`, {
           method: "PUT",
           body: imageFormData
         });
@@ -101,7 +104,7 @@ export default function EditProfileScreen() {
       }
       
       // 然后更新个人资料信息
-      const introResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}/intro`, {
+      const introResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/${user.user._id}/intro`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -117,9 +120,26 @@ export default function EditProfileScreen() {
         console.error("Failed to update profile:", errorText);
         throw new Error(`Failed to update profile information: ${errorText}`);
       }
-      
+      // update local storage
+
+      user.user.major = major;
+      user.user.intro = bio;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/image/${user.user._id}`);
+      if (!response){
+        console.log("error, no image response");
+      }
+      user.user.profileImage = response;
+
+      // const userString = await AsyncStorage.getItem("user");
+      // const user = userString ? JSON.parse(userString) : null;
+      // user.user.major = major;
+      // user.user.intro = bio;
+      // const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/image/${email}`);
+      // user.user.profileImage = 
+      await AsyncStorage.setItem("user", JSON.stringify(user));
       console.log("Profile updated successfully");
-      router.back();
+      //Redirect()
+      //router.back();
     } catch (error: any) {
       console.error("Error updating profile:", error);
       setError(`Failed to update profile: ${error.message}`);
@@ -173,7 +193,10 @@ export default function EditProfileScreen() {
           {loading ? (
             <ActivityIndicator size="large" color={COLORS.indigo} />
           ) : (
-            <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+            <TouchableOpacity style={styles.updateButton} onPress={async () => {
+              await handleUpdate(); 
+              router.push("/profile");
+            }}>
               <Text style={styles.updateText}>Update Profile</Text>
             </TouchableOpacity>
           )}

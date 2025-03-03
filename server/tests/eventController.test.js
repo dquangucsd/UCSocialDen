@@ -98,7 +98,8 @@ describe('Event Controller', () => {
           location: 'Geisel Library',
           description: 'A new test event',
           author: 'j6qu@ucsd.edu'
-        }
+        },
+        userID: 'j6qu@ucsd.edu'
       };
 
       const res = {
@@ -136,7 +137,8 @@ describe('Event Controller', () => {
           author: 'j6qu@ucsd.edu',
           start_time: '2025-12-01T10:00:00Z',
           end_time: '2025-12-01T12:00:00Z',
-        } 
+        },
+        userID: 'j6qu@ucsd.edu'
       };
       
       const res = {

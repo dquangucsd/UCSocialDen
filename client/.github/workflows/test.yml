@@ -3,28 +3,28 @@ name: Run Backend Tests
 on: 
   push:
     branches:
-      - main  # 触发条件：推送到 main 分支
+      - main  # push
   pull_request:
     branches:
-      - main  # 触发条件：有 PR 提交到 main 分支
+      - main  # pull 
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # 在 Ubuntu 机器上运行
+    runs-on: ubuntu-latest  # 在 ubuntu
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # 拉取代码
+        uses: actions/checkout@v4  # get 
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # 使用 Node.js 18.x 版本
+          node-version: '18'  # node
 
       - name: Install dependencies
         run: |
           cd server
-          npm install  # 安装后端依赖
+          npm install  # add dependencies
 
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -48,4 +48,4 @@ jobs:
       - name: Run Tests
         run: |
           cd server
-          npx mocha tests/**/*.js --timeout 10000  # 运行 server/tests 目录下的所有测试文件
+          npx mocha tests/**/*.js --timeout 10000  # run

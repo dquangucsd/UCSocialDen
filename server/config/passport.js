@@ -1,6 +1,6 @@
 const passport = require("passport"); // passport.js is a middleware for authentication
 const GoogleStrategy = require("passport-google-oauth20").Strategy; // google strategy for auth2.0
-const dotenv = require("dotenv");  // dotenv is a module that loads environment variables 
+// const dotenv = require("dotenv");  // dotenv is a module that loads environment variables 
                                    // from a .env file into process.env. 
                                    //.env is a file that contains environment variables, and 
                                    // it contains sensitive information like passwords and api keys.
@@ -17,7 +17,7 @@ const User = require("../models/userModel");
 */
 
 
-dotenv.config();
+// dotenv.config();
 
 passport.use(
     new GoogleStrategy(
@@ -33,6 +33,7 @@ passport.use(
                 console.log("Google Profile:", profile);
                 
                 const email = profile.emails[0].value;
+                const Name = profile.name; 
                 // TODO: check is ucsd.edu email
                 // TODO: figure out how jwt works
                 // TODO: check token variables like email and names
@@ -43,14 +44,23 @@ passport.use(
 
                 let user = await User.findOne({_id: email}); // check the email in our database
                 if (!user){
-                    console.log("False. Email doesn't exist in google"); // there is no google account in our database that matches, 
+                    // new user still pass jwt to frontend. 
+                    const token = jwt.sign(
+                        {
+                            email: email,
+                            name : Name
+                        },
+                        process.env.JWT_SECRET,
+                        { expiresIn: "30min"}
+                    )
+                    console.log("New User"); // there is no google account in our database that matches, 
                                                                          // then they should register.
-                    return done(null, {newUser: true, email}); // return condition to register to auth.js
+                    return done(null, {newUser: true, token}); // return condition to register to auth.js
                 }
                 
                 const token = jwt.sign( // here, the email is in our database, then we can generate a token and log the user in
                     { // object aka payload
-                        email: user.email,
+                        email: user._id,
                         name: user.name,
                         image: user.profile_photo
                     },

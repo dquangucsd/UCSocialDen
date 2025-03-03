@@ -23,9 +23,8 @@ router.get(
 
         // if success get information for user
 
-        if (req.user.newUser) { // redirects you to register
-            // reg TODO
-            return res.redirect(`http://localhost:8081/register?email=${req.user.email}`); // first we send new user to register. 
+        if (req.user.newUser) { // redirects you to oauth-handler with jwt only name and email
+          return res.redirect(`http://localhost:8081/oauth-handler?token=${req.user.token}&newUser=true`); // first we send new user to register. 
                                                                                            // after user registers, we send them back to login again
         }
     
@@ -33,7 +32,8 @@ router.get(
         const { token, user } = req.user; // login
     
         // redirect to homepage with token, meaning you are logged in with the homepage
-        res.redirect(`http://localhost:8081?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        // res.json({ token, user });
+        res.redirect(`http://localhost:8081/oauth-handler?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
     }
 );
 

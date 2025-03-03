@@ -41,18 +41,29 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             </TouchableOpacity>
 
             {/* Event Title */}
-            <Text style={styles.title}>{event.name || "Exciting Event"}</Text>
+            <Text style={styles.title}>{event.name || "Unknown Event"}</Text>
 
             {/* Event Tag */}
             <View style={styles.eventTag}>
-              <Text style={styles.eventInfo}>Category: {event.category || "Unknown Category"}</Text>
+              <Text style={styles.eventInfo}>{event.tags && event.tags.length > 0 ? event.tags : "Unknown"}</Text>
             </View>
 
             {/* Event Location & Time Info */}
             <View style={styles.locationTimeContainer}>
               <Text style={styles.eventInfo}>
-                {event.date ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Unknown Date"}{" "}
-                {event.start || "Unknown Start"} - {event.end || "Unknown End"}
+                {new Date(event.start_time).toLocaleString("en-US", {
+                 month: "short",
+                 day: "numeric",
+                 hour: "2-digit",
+                 minute: "2-digit",
+                  })}{" "}
+                 -{" "}
+                  {new Date(event.end_time).toLocaleString("en-US", {
+                   month: "short",
+                   day: "numeric",
+                   hour: "2-digit",
+                   minute: "2-digit",
+                   })}
               </Text>
               <Text style={styles.eventInfo}>Location: {event.location || "Unknown Location"}</Text>
             </View>
@@ -105,14 +116,17 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: "flex-end",
     backgroundColor: "#ddd",
-    width: width * 0.07,
-    height: width * 0.07,
+    width: 30,
+    height: 30,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 15,
+    marginTop: 5,
   },
   closeButtonText: {
-    fontSize: 18,
+    fontSize: 16,
+    marginBottom: 5,
     fontWeight: "bold",
   },
   scrollContainer: {
@@ -132,10 +146,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   locationTimeContainer: {
-    flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   eventTag: {
     backgroundColor: COLORS.brightSun,
@@ -161,7 +174,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     paddingVertical: 30,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   joinSection: {
     width: "100%",
@@ -184,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#556ebe",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 5,
+    borderRadius: 20,
     alignItems: "center",
     marginTop: 20,
     width: width * 0.8,

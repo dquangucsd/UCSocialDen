@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, useWindowDimensions } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { COLORS, MOCK_EVENTS } from '../utils/constants';
@@ -9,11 +9,17 @@ import Sidebar from '../components/layout/Sidebar';
 import CreateEventForm from '../components/CreateEventForm';
 import EventCard from '../components/EventCard';
 import EventDetails from '../components/EventDetails';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getToken } from '../utils/auth';
+import { AuthContext } from "../contexts/AuthContext";
+import {jwtDecode} from "jwt-decode";
 
 const SERVER_PORT = 5002; //process.env.PORT;
 
 export default function HomeScreen() {
+  const { userData, profileImage } = useContext(AuthContext);
   const router = useRouter();
+  //const [profileImage, setProfileImage] = useState<string | null>(null);
   const {
     currentMonth,
     selectedDate,
@@ -25,9 +31,37 @@ export default function HomeScreen() {
   } = useCalendar(MOCK_EVENTS);
   
   const [events, setEvents] = useState([]);
+  const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const [joinedEvents, setJoinedEvents] = useState([]);
   // This method fetches the events from the database.
   useEffect(() => {
+    async function fetchAuth() {
+      try {
+        const response = await fetch("http://localhost:5002/auth/google/callback", {
+            method: "GET",
+            credentials: "include", 
+        });
+        console.log(1);
+        if (!response.ok) {
+            console.error("Login failed:", response.statusText);
+            return;
+        }
+
+        const data = await response.json();
+        console.log("Token received:", data.token);
+
+        await AsyncStorage.setItem("jwt", data.token);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        router.replace("/HomeScreen");
+      } catch (error) {
+        console.error("Error fetching auth:", error);
+      }
+  }
+  
     async function getEvents() {
+      console.log("Fetching all events...");
       const response = await fetch(`http://localhost:${SERVER_PORT}/api/events`);
 
       if (!response.ok) {
@@ -37,37 +71,59 @@ export default function HomeScreen() {
       }
       console.log("response:", response);
       const events = await response.json();
-      setEvents(events);
+      const sortedEvents = events.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setEvents(sortedEvents);
     }
+
+    async function getJoinedEvents() {
+      console.log("Fetching user joined events...");
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        console.warn("No JWT found in AsyncStorage");
+        return;
+      }
+      const decodedToken: any = jwtDecode(token);
+      // console.log("Decoded Token:", decodedToken);
+      if (!decodedToken.email) {
+        console.warn("No email found in JWT");
+        return;
+      }
+      
+      const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      // console.log("response:", response);
+      const results = await response.json();
+      const sortedEvents = results.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setJoinedEvents(sortedEvents);
+    }
+
+    fetchAuth();
     getEvents();
+    getJoinedEvents();
     return;
   }, [events.length]);
 
+  // After creating an event, this method adds the new event to the list of events.
+  const handleEventCreated = (newEvent) => {
+    setEvents(prevEvents => [newEvent, ...prevEvents]);
+    setJoinedEvents(prevEvents => [newEvent, ...prevEvents].sort((a, b) => new Date(a.start_time) - new Date(b.start_time)));
+  };
+
   function eventList() {
     return events.map((event) => (
-      <View key={event._id} style={styles.eventCard}>
-        <View style={styles.eventHeader}>
-          <View>
-            <Text style={styles.eventTitle}>{event.name}</Text>
-            <Text style={styles.eventCategory}>{event.tags}</Text>
-          </View>
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventDetails}>Start: {event.start_time}</Text>
-            <Text style={styles.eventDetails}>End: {event.end_time}</Text>
-            <Text style={styles.eventDetails}>Location: {event.location}</Text>
-          </View>
-        </View>
-        <Text style={styles.eventDescription}>{event.description}</Text>
-        {event.image && (
-          <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.eventImage} />
-        )}
-        <Text style={styles.eventLimit}>{event.cur_joined} / {event.participant_limit}</Text>
-      </View>
-    ))
+      <TouchableOpacity key={event._id} onPress={() => setSelectedEvent(event)}>
+        <EventCard event={event} />
+      </TouchableOpacity>
+    ));
   }
-
-  const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const { width } = useWindowDimensions();
   const isMobile = width <= 430;
@@ -95,16 +151,18 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* Create event modal */}
       <Modal
-        animationType="slide"
+        animationType="none"
         transparent={true}
         visible={isCreateEventFormVisible}
         onRequestClose={() => setIsCreateEventFormVisible(false)}
       >
-        <CreateEventForm setIsCreateEventFormVisible={setIsCreateEventFormVisible} />
+        <CreateEventForm setIsCreateEventFormVisible={setIsCreateEventFormVisible} 
+        onEventCreated={handleEventCreated} />
       </Modal>
 
       {/* Event details modal (Opens when event card is clicked) */}
       <Modal
+        animationType="slide"
         transparent={true}
         visible={!!selectedEvent}
         onRequestClose={() => setSelectedEvent(null)}
@@ -116,7 +174,7 @@ export default function HomeScreen() {
       <TopNavBar activeTab="Events" />
 
       <View style={styles.mainContent}>
-        <Sidebar />
+        <Sidebar events={joinedEvents} />
         
         {/* Events Section */}
         <View style={[styles.eventSection, { padding: getPadding() * 2 }]}>
@@ -202,12 +260,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '500',
   },
-  eventCard: {
-    backgroundColor: '#E5E7EB',
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
   eventHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -246,5 +298,3 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
-
-// export default HomeScreen;

@@ -1,45 +1,113 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar } from 'react-native';
-import { COLORS } from '../utils/constants';
-import { useRouter } from 'expo-router';
-import TopNavBar from '../components/layout/TopNavBar';
-import Sidebar from '../components/layout/Sidebar';
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Image } from "react-native";
+import { COLORS } from "../utils/constants";
+import { useRouter } from "expo-router";
+import TopNavBar from "../components/layout/TopNavBar";
+import Sidebar from "../components/layout/Sidebar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {jwtDecode} from "jwt-decode"; 
+
+const SERVER_PORT = 5002; //process.env.PORT;
 
 export default function Profile() {
   const router = useRouter();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [userData, setUserData] = useState<any>(null); // 存储用户数据
+  const [joinedEvents, setJoinedEvents] = useState([]);
+  useEffect(() => {
+    async function fetchProfileImage() {
+      const token = await AsyncStorage.getItem("jwt");
+      console.log("token:", token);
+      if (token) {
+        try {
+          const decodedToken: any = jwtDecode(token);
+          console.log("Decoded Token:", decodedToken);
 
+          setUserData({
+            name: decodedToken.name || "Unknown User",
+            email: decodedToken.email || "No Email Provided",
+          });
+          if (decodedToken.image) {
+            console.log("Profile Image URL:", decodedToken.image);
+            setProfileImage(decodedToken.image); 
+          } else {
+            console.warn("No image found in JWT");
+            setProfileImage("https://via.placeholder.com/80"); 
+          }
+        } catch (error) {
+          console.error("Error decoding JWT:", error);
+          setProfileImage("https://via.placeholder.com/80");
+        }
+      }
+    }
 
+    async function getJoinedEvents() {
+      console.log("Fetching user joined events...");
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        console.warn("No JWT found in AsyncStorage");
+        return;
+      }
+      const decodedToken: any = jwtDecode(token);
+      // console.log("Decoded Token:", decodedToken);
+      if (!decodedToken.email) {
+        console.warn("No email found in JWT");
+        return;
+      }
+      
+      const user_ID = decodedToken.email;
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/${user_ID}`);
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      // console.log("response:", response);
+      const results = await response.json();
+      const sortedEvents = results.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+      setJoinedEvents(sortedEvents);
+    }
+    
+    getJoinedEvents()
+    fetchProfileImage();
+  }, []);
+  
 
   return (
     <View style={styles.container}>
       <StatusBar hidden={true} />
       <TopNavBar activeTab="Profile" />
-      
+
       <View style={styles.mainContent}>
-        <Sidebar />
-        
+        <Sidebar events={joinedEvents}/>
+
         {/* Profile Content */}
         <View style={styles.profileSection}>
           <View style={styles.profileHeader}>
             <View style={styles.profilePhotoContainer}>
-              <View style={styles.profilePhoto} />
+            <Image 
+  source={{ uri: profileImage || "https://via.placeholder.com/80" }} 
+  style={styles.profilePhoto}
+/>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.name}>Name</Text>
+              <Text style={styles.name}>{userData?.name || "Name"}</Text>
               <View style={styles.stats}>
                 <View style={styles.stat}>
-                  <Text style={styles.statLabel}>Tag</Text>
+                  <Text style={styles.statLabel}>{userData?.tag?.join(", ") || "Tag"}</Text>
                 </View>
                 <View style={styles.stat}>
-                  <Text style={styles.statLabel}>Rating</Text>
+                  <Text style={styles.statLabel}>{userData?.rating || "Rating"}</Text>
                 </View>
                 <View style={styles.stat}>
-                  <Text style={styles.statLabel}># Posts</Text>
+                  <Text style={styles.statLabel}>{userData?.number_post || "# Posts"}</Text>
                 </View>
               </View>
-              <Text style={styles.email}>Email</Text>
-              <Text style={styles.major}>Major</Text>
-              <Text style={styles.selfIntro}>Self Intro</Text>
+              <Text style={styles.email}>{userData?.email || "Email"}</Text>
+              <Text style={styles.major}>{userData?.major || "Major"}</Text>
+              <Text style={styles.selfIntro}>{userData?.intro || "Self Intro"}</Text>
             </View>
           </View>
 
@@ -62,14 +130,14 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   profileSection: {
     flex: 1,
     padding: 20,
   },
   profileHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 30,
   },
   profilePhotoContainer: {
@@ -79,29 +147,29 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: "#D1D5DB",
   },
   profileInfo: {
     flex: 1,
   },
   name: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
   },
   stats: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 15,
   },
   stat: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: "#E5E7EB",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 4,
     marginRight: 10,
   },
   statLabel: {
-    color: '#4B5563',
+    color: "#4B5563",
   },
   email: {
     fontSize: 16,
@@ -113,17 +181,17 @@ const styles = StyleSheet.create({
   },
   selfIntro: {
     fontSize: 16,
-    color: '#4B5563',
+    color: "#4B5563",
   },
   settingsSection: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: "#E5E7EB",
     padding: 20,
     borderRadius: 8,
     marginTop: 20,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
   },
   settingItem: {
@@ -131,6 +199,6 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    color: '#4B5563',
+    color: "#4B5563",
   },
-}); 
+});

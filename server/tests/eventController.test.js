@@ -7,14 +7,14 @@ const { getAllEvents, createEvent, getEventsByUser } = require('../controller/ev
 describe('Event Controller', () => {
   let mongoServer;
 
-  beforeAll(async () => {
+  before(async () => {
     // 启动内存中的 MongoDB 实例
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
   });
 
-  afterAll(async () => {
+  after(async () => {
     // 断开连接并停止内存中的 MongoDB 实例
     await mongoose.disconnect();
     await mongoServer.stop();

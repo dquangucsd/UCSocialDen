@@ -25,7 +25,7 @@ jobs:
         run: |
           cd server
           npm install
-          npm install --save-dev jest mongodb-memory-server
+          npm install --save-dev mocha chai sinon mongodb-memory-server
 
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -50,4 +50,4 @@ jobs:
       - name: Run Tests
         run: |
           cd server
-          npx jest --testTimeout=10000 tests/ 
+          npx mocha --timeout 10000 tests/ 

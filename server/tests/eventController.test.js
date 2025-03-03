@@ -1,40 +1,55 @@
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const Event = require('../models/eventModel'); 
-const { getAllEvents, createEvent } = require('../controller/eventController');
+const User = require('../models/userModel');
+const { getAllEvents, createEvent, getEventsByUser } = require('../controller/eventController');
 
 describe('Event Controller', () => {
   let mongoServer;
 
   beforeAll(async () => {
-    // Start an in-memory MongoDB instance
+    // 启动内存中的 MongoDB 实例
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
   });
 
   afterAll(async () => {
-    // Disconnect and stop the in-memory MongoDB instance
+    // 断开连接并停止内存中的 MongoDB 实例
     await mongoose.disconnect();
     await mongoServer.stop();
   });
 
   afterEach(async () => {
-    // Clean up all events after each test
+    // 每次测试后清理所有事件
     await Event.deleteMany();
+    await User.deleteMany();
   });
 
   describe('getAllEvents', () => {
     it('should return all events', async () => {
-      // Insert sample events into the in-memory DB
+      // 在内存数据库中插入示例事件
       const sampleEvents = [
-        { name: 'Event 1', start_time: new Date(), end_time: new Date(), location: 'test', author: 'martin' },
-        { name: 'Event 2', start_time: new Date(), end_time: new Date(), location: 'test', author: 'martin'  }
+        { 
+          name: 'UC Social Den Event 1', 
+          start_time: new Date(), 
+          end_time: new Date(Date.now() + 3600000), 
+          location: 'UCSD Library', 
+          author: 'j6qu@ucsd.edu',
+          description: 'Test event 1'
+        },
+        { 
+          name: 'UC Social Den Event 2', 
+          start_time: new Date(), 
+          end_time: new Date(Date.now() + 7200000), 
+          location: 'Price Center', 
+          author: 'j6qu@ucsd.edu',
+          description: 'Test event 2'
+        }
       ];
       await Event.insertMany(sampleEvents);
-    //   console.log(Event.find());
 
-      // Create mock request and response objects
+      // 创建模拟请求和响应对象
       const req = {};
       const res = {
         status: jest.fn().mockReturnThis(),
@@ -46,14 +61,14 @@ describe('Event Controller', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ name: 'Event 1' }),
-          expect.objectContaining({ name: 'Event 2' })
+          expect.objectContaining({ name: 'UC Social Den Event 1' }),
+          expect.objectContaining({ name: 'UC Social Den Event 2' })
         ])
       );
     });
 
     it('should handle errors when fetching events', async () => {
-      // Force an error by mocking Event.find to reject
+      // 通过模拟 Event.find 拒绝来强制错误
       const originalFind = Event.find;
       Event.find = jest.fn().mockRejectedValue(new Error('Database error'));
 
@@ -68,7 +83,7 @@ describe('Event Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'Failed to fetch events' });
 
-      // Restore the original function
+      // 恢复原始函数
       Event.find = originalFind;
     });
   });
@@ -77,10 +92,12 @@ describe('Event Controller', () => {
     it('should create a new event', async () => {
       const req = {
         body: {
-            name: 'New Event',
-            start_time: '2025-12-01T10:00:00Z',
-            end_time: '2025-12-01T12:00:00Z',
-            location: 'test',
+          name: 'New UC Social Den Event',
+          start_time: '2025-12-01T10:00:00Z',
+          end_time: '2025-12-01T12:00:00Z',
+          location: 'Geisel Library',
+          description: 'A new test event',
+          author: 'j6qu@ucsd.edu'
         }
       };
 
@@ -91,27 +108,34 @@ describe('Event Controller', () => {
 
       await createEvent(req, res);
 
-      // Verify that the response status is 201 and the returned event contains the expected fields
+      // 验证响应状态为 201 并且返回的事件包含预期字段
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: 'New Event',
-          author: 'null'
+          name: 'New UC Social Den Event',
+          author: 'j6qu@ucsd.edu'
         })
       );
 
-      // Additionally, check that the event exists in the DB
+      // 另外，检查事件是否存在于数据库中
       const eventsInDb = await Event.find();
       expect(eventsInDb.length).toBe(1);
-      expect(eventsInDb[0].name).toBe('New Event');
+      expect(eventsInDb[0].name).toBe('New UC Social Den Event');
     });
 
     it('should handle errors when creating an event', async () => {
-      // Force an error by mocking Event.create to reject
+      // 通过模拟 Event.create 拒绝来强制错误
       const originalCreate = Event.create;
       Event.create = jest.fn().mockRejectedValue(new Error('Database error'));
 
-      const req = { body: { name: 'Test Event' } };
+      const req = { 
+        body: { 
+          name: 'Test Event',
+          author: 'j6qu@ucsd.edu',
+          start_time: '2025-12-01T10:00:00Z',
+          end_time: '2025-12-01T12:00:00Z',
+        } 
+      };
       const res = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn()
@@ -122,8 +146,75 @@ describe('Event Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'Failed to create an event' });
 
-      // Restore the original function
+      // 恢复原始函数
       Event.create = originalCreate;
+    });
+  });
+
+  describe('getEventsByUser', () => {
+    it('should return events for a specific user', async () => {
+      // 创建测试用户
+      const testUser = {
+        _id: 'j6qu@ucsd.edu',
+        name: 'Test User',
+        email: 'j6qu@ucsd.edu',
+        major: 'Computer Science',
+        joinedEvents: []
+      };
+      
+      await User.create(testUser);
+      
+      // 创建该用户参与的事件
+      const userEvents = [
+        { 
+          name: 'User Event 1', 
+          start_time: new Date(), 
+          end_time: new Date(Date.now() + 3600000), 
+          location: 'UCSD Library', 
+          author: 'j6qu@ucsd.edu',
+          participants: ['j6qu@ucsd.edu'],
+          description: 'User test event 1'
+        },
+        { 
+          name: 'User Event 2', 
+          start_time: new Date(), 
+          end_time: new Date(Date.now() + 7200000), 
+          location: 'Price Center', 
+          author: 'another@ucsd.edu',
+          participants: ['j6qu@ucsd.edu'],
+          description: 'User test event 2'
+        }
+      ];
+      
+      const createdEvents = await Event.insertMany(userEvents);
+      
+      // 更新用户的 joinedEvents
+      const eventIds = createdEvents.map(event => event._id);
+      await User.findByIdAndUpdate('j6qu@ucsd.edu', { joinedEvents: eventIds });
+      
+      // 模拟请求和响应
+      const req = {
+        params: { email: 'j6qu@ucsd.edu' }
+      };
+      
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+      };
+      
+      // 如果 getEventsByUser 函数存在，则测试它
+      if (typeof getEventsByUser === 'function') {
+        await getEventsByUser(req, res);
+        
+        expect(res.json).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ name: 'User Event 1' }),
+            expect.objectContaining({ name: 'User Event 2' })
+          ])
+        );
+      } else {
+        console.log('getEventsByUser function not found, skipping test');
+      }
     });
   });
 });

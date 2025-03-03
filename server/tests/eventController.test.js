@@ -3,20 +3,18 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const Event = require('../models/eventModel'); 
 const User = require('../models/userModel');
 const { getAllEvents, createEvent, getEventsByUser } = require('../controller/eventController');
-const { expect } = require('chai');
-const sinon = require('sinon');
 
 describe('Event Controller', () => {
   let mongoServer;
 
-  before(async () => {
+  beforeAll(async () => {
     // 启动内存中的 MongoDB 实例
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
   });
 
-  after(async () => {
+  afterAll(async () => {
     // 断开连接并停止内存中的 MongoDB 实例
     await mongoose.disconnect();
     await mongoServer.stop();
@@ -26,8 +24,6 @@ describe('Event Controller', () => {
     // 每次测试后清理所有事件
     await Event.deleteMany();
     await User.deleteMany();
-    // 恢复所有 sinon stubs
-    sinon.restore();
   });
 
   describe('getAllEvents', () => {
@@ -56,35 +52,39 @@ describe('Event Controller', () => {
       // 创建模拟请求和响应对象
       const req = {};
       const res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.spy()
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
       };
 
       await getAllEvents(req, res);
 
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.called).to.be.true;
-      
-      const jsonArg = res.json.firstCall.args[0];
-      expect(jsonArg).to.be.an('array').with.lengthOf(2);
-      expect(jsonArg[0]).to.have.property('name', 'UC Social Den Event 1');
-      expect(jsonArg[1]).to.have.property('name', 'UC Social Den Event 2');
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'UC Social Den Event 1' }),
+          expect.objectContaining({ name: 'UC Social Den Event 2' })
+        ])
+      );
     });
 
     it('should handle errors when fetching events', async () => {
-      // 通过 sinon 模拟 Event.find 抛出错误
-      sinon.stub(Event, 'find').throws(new Error('Database error'));
+      // 通过模拟 Event.find 抛出错误
+      const originalFind = Event.find;
+      Event.find = jest.fn().mockRejectedValue(new Error('Database error'));
 
       const req = {};
       const res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.spy()
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
       };
 
       await getAllEvents(req, res);
 
-      expect(res.status.calledWith(500)).to.be.true;
-      expect(res.json.calledWith({ error: 'Failed to fetch events' })).to.be.true;
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Failed to fetch events' });
+
+      // 恢复原始函数
+      Event.find = originalFind;
     });
   });
 
@@ -102,29 +102,33 @@ describe('Event Controller', () => {
       };
 
       const res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.spy()
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
       };
 
       await createEvent(req, res);
 
       // 验证响应状态为 201
-      expect(res.status.calledWith(201)).to.be.true;
+      expect(res.status).toHaveBeenCalledWith(201);
       
       // 验证返回的事件包含预期字段
-      const jsonArg = res.json.firstCall.args[0];
-      expect(jsonArg).to.have.property('name', 'New UC Social Den Event');
-      expect(jsonArg).to.have.property('author', 'j6qu@ucsd.edu');
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'New UC Social Den Event',
+          author: 'j6qu@ucsd.edu'
+        })
+      );
 
       // 另外，检查事件是否存在于数据库中
       const eventsInDb = await Event.find();
-      expect(eventsInDb).to.have.lengthOf(1);
-      expect(eventsInDb[0].name).to.equal('New UC Social Den Event');
+      expect(eventsInDb.length).toBe(1);
+      expect(eventsInDb[0].name).toBe('New UC Social Den Event');
     });
 
     it('should handle errors when creating an event', async () => {
-      // 通过 sinon 模拟 Event.create 抛出错误
-      sinon.stub(Event, 'create').throws(new Error('Database error'));
+      // 通过模拟 Event.create 抛出错误
+      const originalCreate = Event.create;
+      Event.create = jest.fn().mockRejectedValue(new Error('Database error'));
 
       const req = { 
         body: { 
@@ -136,14 +140,17 @@ describe('Event Controller', () => {
       };
       
       const res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.spy()
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
       };
 
       await createEvent(req, res);
 
-      expect(res.status.calledWith(500)).to.be.true;
-      expect(res.json.calledWith({ error: 'Failed to create an event' })).to.be.true;
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Failed to create an event' });
+
+      // 恢复原始函数
+      Event.create = originalCreate;
     });
   });
 
@@ -194,19 +201,20 @@ describe('Event Controller', () => {
       };
       
       const res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.spy()
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
       };
       
       // 如果 getEventsByUser 函数存在，则测试它
       if (typeof getEventsByUser === 'function') {
         await getEventsByUser(req, res);
         
-        expect(res.json.called).to.be.true;
-        const jsonArg = res.json.firstCall.args[0];
-        expect(jsonArg).to.be.an('array');
-        expect(jsonArg.some(event => event.name === 'User Event 1')).to.be.true;
-        expect(jsonArg.some(event => event.name === 'User Event 2')).to.be.true;
+        expect(res.json).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ name: 'User Event 1' }),
+            expect.objectContaining({ name: 'User Event 2' })
+          ])
+        );
       } else {
         console.log('getEventsByUser function not found, skipping test');
       }

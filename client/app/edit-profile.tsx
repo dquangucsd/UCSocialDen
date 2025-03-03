@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import TopNavBar from "../components/layout/TopNavBar";
+import * as ImagePicker from 'expo-image-picker';
 
 const SERVER_PORT = 5002;
 
@@ -12,6 +13,8 @@ export default function EditProfileScreen() {
   const router = useRouter();
   const [major, setMajor] = useState("");
   const [bio, setBio] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +34,7 @@ export default function EditProfileScreen() {
           const userDetails = await response.json();
           setMajor(userDetails.major || "");
           setBio(userDetails.self_intro || "");
+          setProfileImage(userDetails.profile_photo || null);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -39,6 +43,20 @@ export default function EditProfileScreen() {
 
     fetchUserData();
   }, []);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setSelectedImage(result.assets[0]);
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   const handleUpdate = async () => {
     setLoading(true);
@@ -50,32 +68,60 @@ export default function EditProfileScreen() {
 
       const decodedToken: any = jwtDecode(token);
       
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}/intro`, {
+      // 首先更新头像（如果有）
+      if (selectedImage) {
+        const imageUri = selectedImage.uri;
+        const filename = imageUri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename || '');
+        const type = match ? `image/${match[1]}` : 'image';
+        
+        const imageFormData = new FormData();
+        imageFormData.append("profile_image", {
+          uri: imageUri,
+          name: filename,
+          type,
+        } as any);
+        
+        const imageResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/upload/${decodedToken.email}`, {
+          method: "POST",
+          body: imageFormData
+        });
+        
+        if (!imageResponse.ok) {
+          console.error("Failed to update profile image");
+        }
+      }
+      
+      // 然后更新个人资料信息
+      const introResponse = await fetch(`http://localhost:${SERVER_PORT}/api/users/${decodedToken.email}/intro`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          major: major,
-          self_intro: bio
+          intro: bio,
+          major: major
         })
       });
-
-      console.log("Update response status:", response.status);
       
-      if (response.ok) {
-        router.back();
-      } else {
-        const errorText = await response.text();
-        console.error("Server error:", errorText);
-        throw new Error("Failed to update profile");
+      if (!introResponse.ok) {
+        const errorText = await introResponse.text();
+        console.error("Failed to update profile:", errorText);
+        throw new Error(`Failed to update profile information: ${errorText}`);
       }
-    } catch (error) {
+      
+      console.log("Profile updated successfully");
+      router.back();
+    } catch (error: any) {
       console.error("Error updating profile:", error);
-      setError("Failed to update profile");
+      setError(`Failed to update profile: ${error.message}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    router.back();
   };
 
   return (
@@ -85,6 +131,16 @@ export default function EditProfileScreen() {
       <View style={styles.editContainer}>
         <Text style={styles.subtitle}>Edit Profile</Text>
         {error && <Text style={styles.errorText}>{error}</Text>}
+
+        <View style={styles.photoContainer}>
+          <Image 
+            source={{ uri: profileImage || "https://via.placeholder.com/120" }} 
+            style={styles.profilePhoto} 
+          />
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <Text style={styles.uploadText}>Change Photo</Text>
+          </TouchableOpacity>
+        </View>
 
         <TextInput
           style={styles.input}
@@ -101,13 +157,19 @@ export default function EditProfileScreen() {
           multiline
         />
 
-        {loading ? (
-          <ActivityIndicator size="large" color={COLORS.indigo} />
-        ) : (
-          <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-            <Text style={styles.updateText}>Update Profile</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
-        )}
+
+          {loading ? (
+            <ActivityIndicator size="large" color={COLORS.indigo} />
+          ) : (
+            <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+              <Text style={styles.updateText}>Update Profile</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -129,6 +191,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: COLORS.indigo,
   },
+  photoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profilePhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
+  },
   input: {
     width: '80%',
     padding: 12,
@@ -142,20 +214,52 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  uploadButton: {
+    backgroundColor: COLORS.periwinkle,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  uploadText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginTop: 20,
+  },
   updateButton: {
     backgroundColor: COLORS.indigo,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
-    marginTop: 20,
+    flex: 1,
+    marginLeft: 10,
   },
   updateText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  cancelButton: {
+    backgroundColor: COLORS.lightGray,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+  },
+  cancelText: {
+    color: COLORS.darkGray,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   errorText: {
     color: 'red',
     marginBottom: 10,
   },
-}); 
+});

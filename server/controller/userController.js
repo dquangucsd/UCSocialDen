@@ -25,6 +25,18 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getImageByEmail = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.email, "-password");
+    if (!user) {
+      return {success: false, message: 'User not found'};
+    }
+    res.status(200).json(user.profile_photo);
+  }
+  catch (error) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+}
 
 const getUserByEmail = async (req, res) => {
   try {
@@ -32,7 +44,7 @@ const getUserByEmail = async (req, res) => {
     if (!user) {
       return {success: false, message: 'User not found'};
     }
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
   }
@@ -90,79 +102,22 @@ const joinEvent = async (req, res) => {
 const updateUserIntro = async (req, res) => {
   try {
     const { email } = req.params;
-    const {intro } = req.body;
+    const { intro, major } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       email, //search for use by email
-      { intro }, // update intro value
+      { intro, major }, // update intro value
       { new: true, select: "-password" } //return updated user except password
     );
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: "Update Intro User not found" });
     }
-    res.json({success: true, user: updatedUser});
+    // console.log(updatedUser);
+    res.status(200).json({success: true, user: updatedUser});
   } catch (error) {
+    console.error("Failed to update user's intro:", error);
     res.status(500).json({ success: false, message: "Failed to update user's intro" });
   }
 };
-
-// updateiamge with _id of user
-const updateimage = async(req,res) => {
-  try{
-    const {email} = req.params;
-    if (!req.file){
-        console.log("no file");
-        return res.status(400).json({success:false, message: "No file"});
-    }
-
-    const user = await User.findById(email);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    if (user.profile_photo) {
-      const oldKey = user.profile_photo.split(".com/")[1];
-      try {
-        await s3.send(new DeleteObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: oldKey,
-        }));
-      } catch (deleteError) {
-        console.error("Failed to delete old image:", deleteError);
-      }
-    }
-
-    const fileName = `avatars/${Date.now().toString()}-${req.file.originalname}`;
-
-    const uploadParams = {
-      Bucket: process.env.AWS_BUCKET_NAME, // "210projectimage"
-      Key: fileName,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-      //ACL: "public-read",
-    };
-
-    await s3.send(new PutObjectCommand(uploadParams));
-
-    const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-
-    
-    const updateUser = await User.findByIdAndUpdate(
-      email,
-      { profile_photo: s3Url},
-      {new : true, select : "-password"}
-    );
-
-    if (!updateUser){
-      return res.status(404).json({success: false, message: "User not found"});
-    }
-
-    res.json({ success: true, user: updateUser });
-
-  }
-  catch (error) {
-    res.status(500).json({ success: false, message: "Failed to upload image" });
-  }
-}
 
 // uploadImage, helper function for register
 const uploadImage = async (file) => {
@@ -187,6 +142,40 @@ const uploadImage = async (file) => {
     return null;
   }
 };
+
+const updateImage = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    let profile_photo = null;
+    // get image uri.
+    if (req.file) {
+      const uploadResponse = await uploadImage(req.file);
+      console.log("profile photo aws uri:", uploadResponse);
+      if (!uploadResponse) {
+        return res.status(500).json({ success: false, message: "Profile photo upload failed." });
+      }
+      profile_photo = uploadResponse;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      email,
+      { profile_photo },
+      { new: true, select: "-password" } //return updated user except password
+    );
+    
+    console.log("updated user:", updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "Update profile photo: User not found" });
+    }
+    // console.log(updatedUser);
+    res.status(200).json({success: true, user: updatedUser});
+  } catch (error) {
+    console.error("Profile Photo Update failed:", error);
+    return res.status(500).json({ success: false, message: "Profile photo update failed." });
+  }
+}
+
 // register main function 
 const register = async (req, res) => {
   try {
@@ -237,8 +226,9 @@ module.exports = {
   getUsers,
   getUserByEmail,
   updateUserIntro,
-  updateimage,
   uploadImage,
   joinEvent,
-  register
+  register,
+  updateImage,
+  getImageByEmail
 };

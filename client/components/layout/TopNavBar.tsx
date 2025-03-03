@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions,Image } from 'react-native';
 import { COLORS } from '../../utils/constants';
 import { useRouter } from 'expo-router';
 import { Route } from 'expo-router/build/Route';
 import WelcomePage from '../../app/WelcomePage';
 import { AuthContext } from "../../contexts/AuthContext";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 interface TopNavBarProps {
   activeTab: string;
 }
@@ -14,7 +15,28 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
   const router = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
-  
+  const [CurrentProfileImage, setCurrentProfileImage] = useState<string | null >(null);
+
+  useEffect(() => {
+    // 当 profileImage 从上下文更新时，更新当前显示的头像
+    setCurrentProfileImage(profileImage || null);
+    
+    // 备用方案：直接从 AsyncStorage 获取
+    const getProfileImage = async () => {
+      const userString = await AsyncStorage.getItem('user');
+      if (userString) {
+        const user = JSON.parse(userString);
+        if (user.user && user.user.profile_photo) {
+          setCurrentProfileImage(user.user.profile_photo);
+        }
+      }
+    };
+    
+    if (!profileImage) {
+      getProfileImage();
+    }
+  }, [profileImage]);
+
 
   const updateMenuPosition = (event: any) => {
     const { pageY, pageX } = event.nativeEvent;
@@ -48,7 +70,7 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
               setIsProfileMenuOpen(!isProfileMenuOpen);
             }}
           >
-            <Image source={{ uri: profileImage || "https://via.placeholder.com/80" }}
+            <Image source={{ uri: CurrentProfileImage || "https://via.placeholder.com/80" }}
               style={styles.profileCircle} 
             />
           </TouchableOpacity>

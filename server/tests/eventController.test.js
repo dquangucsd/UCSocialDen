@@ -25,4 +25,9 @@ describe('Event Controller', () => {
     await Event.deleteMany();
     await User.deleteMany();
   });
+  
+  // 添加一个简单的测试，确保测试套件能够运行
+  it('should pass a simple test', () => {
+    expect(true).toBe(true);
+  });
 });

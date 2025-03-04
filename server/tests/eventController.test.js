@@ -27,7 +27,15 @@ describe('Event Controller', () => {
   });
   
   //add a simple test to ensure the test suite can run
+  //test
   it('should pass a simple test', () => {
     expect(true).toBe(true);
+  });
+
+  //test get all events
+  it('should get all events', async () => {
+    const events = await getAllEvents();
+    expect(events).toBeDefined();
+    expect(events.length).toBeGreaterThan(0);
   });
 });

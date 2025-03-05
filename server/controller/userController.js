@@ -158,6 +158,23 @@ const updateImage = async (req, res) => {
       profile_photo = uploadResponse;
     }
 
+    const user = await User.findById(email);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.profile_photo) {
+      const oldKey = user.profile_photo.split(".com/")[1];
+      try {
+        await s3.send(new DeleteObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: oldKey,
+        }));
+      } catch (deleteError) {
+        console.error("Failed to delete old image:", deleteError);
+      }
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       email,
       { profile_photo },
@@ -206,7 +223,7 @@ const register = async (req, res) => {
       email,
       name,
       major,
-      bio,
+      intro: bio,
       profile_photo: profilePhoto,
     });
 

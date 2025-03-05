@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -37,34 +37,29 @@ export default function LoginScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={StyleSheet.absoluteFill}>
-                <Video
-                    source={require("../assets/video/videoplayback.mp4")} 
-                    style={styles.video}
-                    shouldPlay
-                    isLooping
-                    resizeMode={ResizeMode.COVER}
-                    isMuted
-                />
-            </View>
-            
-             <View style={styles.navbar}>
-                <Text style={styles.title}>UC Social Den</Text>
-            </View>
-            <View style={styles.LoginContainer}>
-                
-                <Text style={styles.subtitle}>Welcome to UC Social Den</Text>
+        <ImageBackground
+            source={require("../assets/images/login.png")}  
+            style={styles.container}
+            resizeMode="cover"
+        >
+            <View style={styles.overlay} pointerEvents="none" />
 
-                {loading ? (
-                    <ActivityIndicator size="large" color="#007AFF" />
-                ) : (
-                    <TouchableOpacity style={styles.loginButton} onPress={handleGoogleLogin}>
-                        <Text style={styles.loginText}>Login with UCSD Email</Text>
-                    </TouchableOpacity>
-                )}
+            <View style={styles.content}>
+                <View style={styles.navbar}>
+                    <Text style={styles.title}>UC Social Den</Text>
+                </View>
+                <View style={styles.LoginContainer}>
+                    <Text style={styles.subtitle}>Welcome to UC Social Den</Text>
+                    {loading ? (
+                        <ActivityIndicator size="large" color="#007AFF" />
+                    ) : (
+                        <TouchableOpacity style={styles.loginButton} onPress={handleGoogleLogin}>
+                            <Text style={styles.loginText}>Login with UCSD Email</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -73,11 +68,21 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "transparent",
     },
-    video: {
+    
+
+    overlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
         width: "100%",
         height: "100%",
-        //position: "absolute",
-        zIndex: -1,
+        backgroundColor: "rgba(0, 0, 0, 0.3)",  
+        zIndex: 1,
+    },
+    content: {
+        flex: 1,
+        position: "relative",
+        zIndex: 2,
     },
     LoginContainer: {
         flex: 1,
@@ -90,31 +95,36 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         backgroundColor: COLORS.indigo,
+        zIndex: 2,
     },
     title: {
         color: '#FFFFFF',
         fontSize: 34,
         fontWeight: 'bold',
         fontFamily: 'Zain',
+        zIndex: 2,
     },
     subtitle: {
-        color: COLORS.indigo,
-        fontSize: 32,
+        color: "white",
+        fontSize: 50,
         fontWeight: 'bold',
         fontFamily: 'Zain',
         marginTop: 200,
         marginBottom: 30,
+        zIndex: 2,
     },
     loginButton: {
         backgroundColor: "#4285F4",
-        paddingVertical: 10,
+        paddingVertical: 20,
         paddingHorizontal: 20,
-        borderRadius: 5,
+        borderRadius: 10,
+        zIndex: 2,
     },
     loginText: {
         color: "white",
         fontSize: 16,
         fontWeight: "bold",
+        zIndex: 2,
     },
 
 });

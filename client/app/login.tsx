@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "rea
 import { useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Video,ResizeMode  } from "expo-av";
 
 const SERVER_PORT = 5002;
 const BACKEND_URL = `http://localhost:${SERVER_PORT}`;
@@ -37,6 +38,17 @@ export default function LoginScreen() {
 
     return (
         <View style={styles.container}>
+            <View style={StyleSheet.absoluteFill}>
+                <Video
+                    source={require("../assets/video/videoplayback.mp4")} 
+                    style={styles.video}
+                    shouldPlay
+                    isLooping
+                    resizeMode={ResizeMode.COVER}
+                    isMuted
+                />
+            </View>
+            
              <View style={styles.navbar}>
                 <Text style={styles.title}>UC Social Den</Text>
             </View>
@@ -59,12 +71,18 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.alabaster,
+        backgroundColor: "transparent",
+    },
+    video: {
+        width: "100%",
+        height: "100%",
+        //position: "absolute",
+        zIndex: -1,
     },
     LoginContainer: {
         flex: 1,
         alignItems: "center",
-        backgroundColor: COLORS.alabaster,
+        backgroundColor: "transparent",
     },
     navbar: {
         flexDirection: 'row',
@@ -98,4 +116,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+
 });

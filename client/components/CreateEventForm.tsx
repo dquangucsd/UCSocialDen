@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform, M
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
 import { Calendar } from 'react-native-calendars';
+import TimePicker from './TimePicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {jwtDecode} from "jwt-decode";
@@ -211,13 +212,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                 value={startDate}
                 onChangeText={setStartDate}
               />
-              <TextInput
-                style={styles.time}
-                placeholder="00:00"
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                value={startTime}
-                onChangeText={setStartTime}
-              />
+              <TimePicker onChange={setStartTime}/>
             </View>
             <TouchableOpacity onPress={() => {
               handleCalenderOnClick();
@@ -238,13 +233,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                 value={endDate}
                 onChangeText={setEndDate}
               />
-              <TextInput
-                style={styles.time}
-                placeholder="00:00"
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                value={endTime}
-                onChangeText={setEndTime}
-              />
+              <TimePicker onChange={setEndTime} />
             </View>
             <TouchableOpacity onPress={() => {
               handleCalenderOnClick();
@@ -708,8 +697,7 @@ const stylesDesktop = StyleSheet.create({
     alignItems: "center",
   },
   tagsContainer: {
-    backgroundColor: COLORS.brightSun,
-    height: 25,
+    height: 50,
   },
   modalContent: {
     backgroundColor: COLORS.alabaster,

@@ -15,7 +15,7 @@ import { AuthContext } from "../contexts/AuthContext";
 import { jwtDecode } from "jwt-decode";
 
 const SERVER_PORT = 5002;
-
+const TAGS = ["All", "Music", "Art", "Sports", "Food", "Networking"];
 export default function HomeScreen() {
   const { userData, profileImage } = useContext(AuthContext);
   const router = useRouter();
@@ -33,7 +33,8 @@ export default function HomeScreen() {
   const [isCreateEventFormVisible, setIsCreateEventFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [joinedEvents, setJoinedEvents] = useState([]);
-
+  const [selectedTag, setSelectedTag] = useState("All");
+  const [showTags, setShowTags] = useState(false);
   // Today
   const [selectedFilter, setSelectedFilter] = useState("Today");
 
@@ -122,8 +123,10 @@ export default function HomeScreen() {
                eventDate.getMonth() === tomorrow.getMonth() &&
                eventDate.getDate() === tomorrow.getDate();
       });
+    } else if (selectedFilter === "Filter") {
+      if (selectedTag === "All") return events;
+      return events.filter(event => event.tags && event.tags.includes(selectedTag));
     } else if (selectedFilter === "Date" || selectedFilter === "Filter") {
-      
       return events;
     }
     return events;
@@ -234,7 +237,10 @@ export default function HomeScreen() {
                     selectedFilter === "Filter" && styles.activeFilter,
                     getButtonStyle(),
                   ]}
-                  onPress={() => setSelectedFilter("Filter")}
+                  onPress={() => {
+                    setSelectedFilter("Filter");
+                    setShowTags(true);
+                  }}
                 >
                   <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Filter</Text>
                 </TouchableOpacity>
@@ -247,7 +253,23 @@ export default function HomeScreen() {
               <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Add</Text>
             </TouchableOpacity>
           </View>
-
+          {selectedFilter === "Filter" && showTags && (
+              <View style={[styles.tagContainer, { gap: getPadding() }]}>
+                {TAGS.map((tag) => (
+                  <TouchableOpacity 
+                    key={tag}
+                    style={[
+                      styles.tagButton,
+                      getButtonStyle(),
+                      selectedTag === tag && styles.activeTag,
+                    ]}
+                    onPress={() => setSelectedTag(tag)}
+                  >
+                    <Text style={[styles.filterText, { fontSize: getFontSize() }]}>{tag}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+          )}
           {/* event list */}
           <ScrollView>
             {eventList()}
@@ -293,6 +315,24 @@ const styles = StyleSheet.create({
   filterText: {
     color: '#FFFFFF',
     fontWeight: '500',
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    //justifyContent: 'space-around',
+    //alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  tagButton: {
+    backgroundColor: COLORS.periwinkle,
+    borderRadius: 12,
+    marginHorizontal: 1,  
+    height: 20,  
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activeTag: {
+    backgroundColor: COLORS.indigo,
   },
   eventHeader: {
     flexDirection: 'row',

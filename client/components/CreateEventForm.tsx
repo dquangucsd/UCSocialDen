@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Platform, Modal, ScrollView } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { useMediaQuery } from 'react-responsive';
+import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {jwtDecode} from "jwt-decode";
@@ -29,6 +30,8 @@ export default function CreateEventForm(props: CreateEventFormProps) {
 
   const today = new Date();
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [selectStartEnd, setSelectStartEnd] = useState("start");
 
   // Form values
   const [name, setName] = useState("");
@@ -44,6 +47,24 @@ export default function CreateEventForm(props: CreateEventFormProps) {
   const availableTags = ["Music", "Art", "Sports", "Food", "Networking"];
   const [selectedTag, setSelectedTag] = useState<string>("");
   const [isTagDropdownVisible, setIsTagDropdownVisible] = useState(false);
+
+  // handle Calendar
+  const handleCalenderOnClick = () => {
+    if (isDesktop) {
+      setIsCalendarVisible(prev => !prev);
+    } else {
+      setIsDateTimePickerVisible(true);
+    }
+  }
+
+  const handleDayPress = (day: {year: Number, month: Number, day: Number}) => {
+    if (selectStartEnd === "start") {
+      setStartDate(day.month + "/" + day.day);
+    } else if (selectStartEnd === "end") {
+      setEndDate(day.month + "/" + day.day);
+    }
+    setIsCalendarVisible(false);
+  }
 
   // Form error checking
   const [inputErrors, setInputErrors] = useState<ValidInput>({
@@ -73,9 +94,9 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     );
   };
 
-    const submitCreateEventForm = async () => {
-        console.log("Creating a new event...");
-        if (!validateFormInput()) return
+  const submitCreateEventForm = async () => {
+    console.log("Creating a new event...");
+    if (!validateFormInput()) return
 
     const createTime = new Date();
     const startDateTime = new Date(
@@ -108,39 +129,39 @@ export default function CreateEventForm(props: CreateEventFormProps) {
       participant_limit: +participantLimit
     };
 
-        const token = await AsyncStorage.getItem("jwt");
-        if (!token) {
-            console.warn("No JWT found in AsyncStorage");
-            return;
-        }
-        const decodedToken: any = jwtDecode(token);
-        // console.log("Decoded Token:", decodedToken);
-        if (!decodedToken.email) {
-            console.warn("No email found in JWT");
-            return;
-        }
-        
-        const user_ID = decodedToken.email;
-
-        try {
-            const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/create/${user_ID}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(event)
-            });
-            
-            if (response.ok) {
-                const newEvent = await response.json();
-                alert("Success! Event created successfully!");
-                props.setIsCreateEventFormVisible(false);
-                props.onEventCreated(newEvent);
-            } else {
-                alert("Error! Event creation failed, please try again later.");
-            }
-        } catch (error: any) {
-            alert("Error" + error.message);
-        }
+    const token = await AsyncStorage.getItem("jwt");
+    if (!token) {
+        console.warn("No JWT found in AsyncStorage");
+        return;
     }
+    const decodedToken: any = jwtDecode(token);
+    // console.log("Decoded Token:", decodedToken);
+    if (!decodedToken.email) {
+        console.warn("No email found in JWT");
+        return;
+    }
+    
+    const user_ID = decodedToken.email;
+
+    try {
+        const response = await fetch(`http://localhost:${SERVER_PORT}/api/events/create/${user_ID}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(event)
+        });
+        
+        if (response.ok) {
+            const newEvent = await response.json();
+            alert("Success! Event created successfully!");
+            props.setIsCreateEventFormVisible(false);
+            props.onEventCreated(newEvent);
+        } else {
+            alert("Error! Event creation failed, please try again later.");
+        }
+    } catch (error: any) {
+        alert("Error" + error.message);
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -160,6 +181,9 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             />
           </View>
           <View style={styles.occupancyContainer}>
+            <Text style={styles.occupancy}>
+              0 /
+            </Text>
             <TextInput
               style={styles.occupancy}
               inputMode="numeric"
@@ -195,7 +219,10 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                 onChangeText={setStartTime}
               />
             </View>
-            <TouchableOpacity onPress={() => setIsDateTimePickerVisible(true)}>
+            <TouchableOpacity onPress={() => {
+              handleCalenderOnClick();
+              setSelectStartEnd("start");
+            }}>
               <Image
                 style={styles.calendarIcon}
                 source={require("../assets/images/calendar-icon.png")}
@@ -219,7 +246,10 @@ export default function CreateEventForm(props: CreateEventFormProps) {
                 onChangeText={setEndTime}
               />
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              handleCalenderOnClick();
+              setSelectStartEnd("end");
+            }}>
               <Image
                 style={styles.calendarIcon}
                 source={require("../assets/images/calendar-icon.png")}
@@ -227,6 +257,11 @@ export default function CreateEventForm(props: CreateEventFormProps) {
             </TouchableOpacity>
           </View>
         </View>
+        {(isCalendarVisible && Platform.OS === "web") && (
+          <View style={styles.calendarContainer}>
+            <Calendar style={styles.calendar} onDayPress={handleDayPress}/>
+          </View>
+        )}
         {(isDateTimePickerVisible && Platform.OS !== "web") && (
           <DateTimePicker value={today} mode="datetime" />
         )}
@@ -364,7 +399,7 @@ const stylesMobile = StyleSheet.create({
   occupancyContainer: {
     backgroundColor: COLORS.blueGray,
     height: 50,
-    width: 100,
+    width: 125,
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -415,6 +450,12 @@ const stylesMobile = StyleSheet.create({
     height: 25,
     width: 25,
     marginLeft: 10,
+  },
+  calendarContainer: {
+
+  },
+  calendar: {
+
   },
   locationContainer: {
     backgroundColor: COLORS.blueGray,
@@ -544,8 +585,8 @@ const stylesDesktop = StyleSheet.create({
   },
   container: {
     backgroundColor: COLORS.alabaster,
-    width: "100%",
-    height: "100%",
+    width: "50%",
+    height: "60%",
     padding: 25,
     borderRadius: 10,
     flexDirection: "column",
@@ -571,7 +612,7 @@ const stylesDesktop = StyleSheet.create({
   occupancyContainer: {
     backgroundColor: COLORS.blueGray,
     height: 50,
-    width: 100,
+    width: 125,
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -618,6 +659,17 @@ const stylesDesktop = StyleSheet.create({
   calendarIcon: {
     height: 25,
     width: 25,
+  },
+  calendarContainer: {
+    height: 100,
+    width: 300,
+    position: "absolute",
+    top: 145,
+    left: 200,
+    zIndex: 2
+  },
+  calendar: {
+    
   },
   locationContainer: {
     backgroundColor: COLORS.blueGray,

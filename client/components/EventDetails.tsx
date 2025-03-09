@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {COLORS} from "../utils/constants";
+import jwtDecode from "jwt-decode";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   View,
@@ -13,23 +15,67 @@ import {
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
+const SERVER_PORT = 5002;
 
 interface EventDetailsProps {
-  event: any; // Ensure it receives correct event data
+  event: {
+    _id: string;
+    name: string;
+    start_time: string;
+    end_time: string;
+    location: string;
+    description: string;
+    participants: string[];
+    author: string;
+    image?: string;
+    tags: string;
+    current_joined: number;
+    participant_limit: number;
+    version: number;
+  }; // Ensure it receives correct event data
   onClose: () => void;
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
-  if (!event) return null;
+  // if (!event) return null;
 
-  // const joinedPeople = [
-  //   { id: 1, avatar: "https://via.placeholder.com/50" },
-  //   { id: 2, avatar: "https://via.placeholder.com/50" },
-  //   { id: 3, avatar: "https://via.placeholder.com/50" },
-  //   { id: 4, avatar: "https://via.placeholder.com/50" },
-  //   { id: 5, avatar: "https://via.placeholder.com/50" },
-  // ];
-  console.log(event.start);
+  // console.log(event.start);
+  const [isJoined, setIsJoined] = useState(false);
+  const handleJoinEvent = async () => {
+    // Send a request to join the event
+    // If successful, set isJoined to true
+    try {
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      if (!user) {
+        console.error("No user found");
+        alert("Please log in to join the event."); // DELETE THIS LINE?
+        throw new Error("No user found");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${event._id}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          email: user.user._id 
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data["message"]);
+      }
+      
+      setIsJoined(true);
+      alert("You have joined the event!");
+    } catch (error) {
+      console.error("Failed to join event:", error);
+      alert("Failed to join event. Please try again."); 
+    }
+  };
+
   return (
     <Modal visible animationType="none" transparent>
       <View style={styles.modalBackground}>
@@ -89,8 +135,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             </View> */}
 
             {/* Join Button */}
-            <TouchableOpacity style={styles.joinButton}>
-              <Text style={styles.buttonText}>Join</Text>
+            <TouchableOpacity 
+                // style={isJoined ? styles.joinButton : styles.disabledButton}
+                style={isJoined ? styles.disabledButton : styles.joinButton}
+                onPress={handleJoinEvent}
+                disabled={isJoined}
+            >
+              <Text style={styles.buttonText}>{isJoined ? "Joined" : "Join"}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -195,6 +246,16 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     backgroundColor: "#556ebe",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    alignItems: "center",
+    marginTop: 20,
+    width: width * 0.8,
+    alignSelf: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#aaa",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,

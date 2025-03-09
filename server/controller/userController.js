@@ -87,6 +87,7 @@ const joinEvent = async (req, res) => {
     await event.save({ session });
 
     await session.commitTransaction();
+    alert
     session.endSession();
 
     res.json({ success: true, message: "Successfully joined event", user, event });

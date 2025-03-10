@@ -6,6 +6,8 @@ import { Route } from 'expo-router/build/Route';
 import WelcomePage from '../../app/WelcomePage';
 import { AuthContext } from "../../contexts/AuthContext";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { checkTokenExpiration } from '../../utils/auth';
+
 interface TopNavBarProps {
   activeTab: string;
 }
@@ -37,6 +39,19 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
     }
   }, [profileImage]);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const isValid = await checkTokenExpiration();
+      if (!isValid) {
+        router.replace('/');
+      }
+    };
+
+    checkAuth();
+    const interval = setInterval(checkAuth, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const updateMenuPosition = (event: any) => {
     const { pageY, pageX } = event.nativeEvent;
@@ -95,10 +110,16 @@ export default function TopNavBar({ activeTab }: TopNavBarProps) {
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.profileMenuItem}
-              onPress={() => {
-                console.log('Sign out clicked');
-                setIsProfileMenuOpen(false);
-                router.push('/');
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem("jwt");
+                  await AsyncStorage.removeItem("user");
+                  console.log('Sign out successful');
+                  setIsProfileMenuOpen(false);
+                  router.push('/');
+                } catch (error) {
+                  console.error('Error signing out:', error);
+                }
               }}
             >
               <Text style={styles.profileMenuText}>Sign Out</Text>
@@ -187,4 +208,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
   },
-}); 
+});

@@ -6,6 +6,7 @@ import TopNavBar from "../components/layout/TopNavBar";
 import Sidebar from "../components/layout/Sidebar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {jwtDecode} from "jwt-decode"; 
+import { checkTokenExpiration } from '../utils/auth';
 
 const SERVER_PORT = 5002; //process.env.PORT;
 
@@ -82,8 +83,18 @@ export default function Profile() {
       setJoinedEvents(sortedEvents);
     }
     
-    getJoinedEvents()
-    fetchProfileImage();
+    async function checkAuth() {
+      const isValid = await checkTokenExpiration();
+      if (!isValid) {
+        router.replace('/');
+        return;
+      }
+      // still finish functions
+      await fetchProfileImage();
+      await getJoinedEvents();
+    }
+
+    checkAuth();
   }, []);
   
 

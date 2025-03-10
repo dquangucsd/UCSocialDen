@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, ImageBackg
 import { useRouter } from "expo-router";
 import { COLORS } from '../utils/constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Video,ResizeMode  } from "expo-av";
 
 const SERVER_PORT = 5002;
 const BACKEND_URL = `http://localhost:${SERVER_PORT}`;
@@ -14,15 +13,12 @@ export default function LoginScreen() {
 
     useEffect(() => {
         async function checkAuth() {
-            // const token = await AsyncStorage.getItem("jwt");
-            // if (token) {
-            //     router.replace("/HomeScreen");
-            // } else {
-            //     setLoading(false); 
-            // }
-            await AsyncStorage.removeItem("jwt");
-            await AsyncStorage.removeItem("user");
-            setLoading(false);
+            const token = await AsyncStorage.getItem("jwt");
+            if (token) {
+                router.replace("/HomeScreen");
+            } else {
+                setLoading(false); 
+            }
         }
 
         checkAuth();

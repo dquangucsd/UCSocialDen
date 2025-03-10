@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 const {
   getUserByEmail,
   updateUserIntro,
@@ -24,10 +25,7 @@ jest.mock('@aws-sdk/s3-request-presigner', () => ({
 console.log("MONGO_URI_TEST:", process.env.MONGO_URI);
 beforeAll(async () => {
   const uri = process.env.MONGO_URI_TEST; 
-  await mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
+  await mongoose.connect(uri);
 });
 
 afterAll(async () => {

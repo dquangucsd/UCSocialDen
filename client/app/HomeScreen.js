@@ -229,7 +229,7 @@ export default function HomeScreen() {
                   ]}
                   onPress={() => setSelectedFilter("Date")}
                 >
-                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>All Dates</Text>
+                  <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Date...</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[
@@ -250,15 +250,10 @@ export default function HomeScreen() {
               style={[styles.addEventButton, getButtonStyle()]}
               onPress={() => setIsCreateEventFormVisible(true)}
             >
-              <Text style={[styles.filterText, {color: COLORS.indigo, fontSize: getFontSize() }]}>Add</Text>
+              <Text style={[styles.filterText, { fontSize: getFontSize() }]}>Add</Text>
             </TouchableOpacity>
           </View>
           {selectedFilter === "Filter" && showTags && (
-            <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            style={{paddingBottom: getPadding() * 2}}
-            >
               <View style={[styles.tagContainer, { gap: getPadding() }]}>
                 {TAGS.map((tag) => (
                   <TouchableOpacity 
@@ -274,7 +269,6 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-            </ScrollView>
           )}
           {/* event list */}
           <ScrollView>

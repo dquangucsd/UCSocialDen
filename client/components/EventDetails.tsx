@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {COLORS} from "../utils/constants";
-import jwtDecode from "jwt-decode";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   View,
@@ -15,94 +13,23 @@ import {
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
-const SERVER_PORT = 5002;
 
 interface EventDetailsProps {
-  event: {
-    _id: string;
-    name: string;
-    start_time: string;
-    end_time: string;
-    location: string;
-    description: string;
-    participants: string[];
-    author: string;
-    image?: string;
-    tags: string;
-    current_joined: number;
-    participant_limit: number;
-    version: number;
-  }; // Ensure it receives correct event data
+  event: any; // Ensure it receives correct event data
   onClose: () => void;
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
-  // if (!event) return null;
-  console.log(event.tags);
-  // console.log(event.start);
-  const [isJoined, setIsJoined] = useState(false);
+  if (!event) return null;
 
-  const tagPadding = () => {
-    if (event.tags && event.tags.length > 0) return 5;
-    return 0;
-  };
-
-  useEffect(() => {
-    const fetchJoinStatus = async () => {
-      try {
-        const userString = await AsyncStorage.getItem("user");
-        const user = userString ? JSON.parse(userString) : null;
-        if (user) {
-          const response = await fetch(
-            `http://localhost:${SERVER_PORT}/api/users/${event._id}/join_status?userId=${user.user._id}`
-          );
-          const data = await response.json();
-          setIsJoined(data.joined);
-        }
-      } catch (error) {
-        console.error("Error fetching join status:", error);
-      }
-    };
-  
-    fetchJoinStatus();
-  }, [event._id]);
-  
-
-  const handleJoinEvent = async () => {
-    // Send a request to join the event
-    // If successful, set isJoined to true
-    try {
-      const userString = await AsyncStorage.getItem("user");
-      const user = userString ? JSON.parse(userString) : null;
-      if (!user) {
-        console.error("No user found");
-        alert("Please log in to join the event."); // DELETE THIS LINE?
-        throw new Error("No user found");
-        return;
-      }
-
-      const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${event._id}/join`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          email: user.user._id 
-        })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        alert(data["message"]);
-      }
-      
-      setIsJoined(true);
-      alert("You have joined the event!");
-    } catch (error) {
-      console.error("Failed to join event:", error);
-      alert("Failed to join event. Please try again."); 
-    }
-  };
-
+  // const joinedPeople = [
+  //   { id: 1, avatar: "https://via.placeholder.com/50" },
+  //   { id: 2, avatar: "https://via.placeholder.com/50" },
+  //   { id: 3, avatar: "https://via.placeholder.com/50" },
+  //   { id: 4, avatar: "https://via.placeholder.com/50" },
+  //   { id: 5, avatar: "https://via.placeholder.com/50" },
+  // ];
+  console.log(event.start);
   return (
     <Modal visible animationType="none" transparent>
       <View style={styles.modalBackground}>
@@ -117,12 +44,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             <Text style={styles.title}>{event.name || "Unknown Event"}</Text>
 
             {/* Event Tag */}
-            <View>
-              <TouchableOpacity style={[styles.eventTag, {paddingHorizontal: tagPadding()}]} disabled>
-              <Text style={styles.eventInfo}>
-                {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}
-              </Text>
-              </TouchableOpacity>
+            <View style={styles.eventTag}>
+              <Text style={styles.eventInfo}>{event.tags && event.tags.length > 0 ? event.tags : "Unknown"}</Text>
             </View>
 
             {/* Event Location & Time Info */}
@@ -155,13 +78,19 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
               <Text>{event.description || "No description available."}</Text>
             </View>
 
+            {/* Joined People Section */}
+            {/* <View style={styles.joinSection}>
+              <Text style={styles.label}>Joined people</Text>
+              <View style={styles.profileContainer}>
+                {joinedPeople.map((person) => (
+                  <Image key={person.id} source={{ uri: person.avatar || "https://via.placeholder.com/50"}} style={styles.profileCircle} />
+                ))}
+              </View>
+            </View> */}
+
             {/* Join Button */}
-            <TouchableOpacity 
-                style={isJoined ? styles.disabledButton : styles.joinButton}
-                onPress={handleJoinEvent}
-                disabled={isJoined}
-            >
-              <Text style={styles.buttonText}>{isJoined ? "Joined" : "Join"}</Text>
+            <TouchableOpacity style={styles.joinButton}>
+              <Text style={styles.buttonText}>Join</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -223,14 +152,16 @@ const styles = StyleSheet.create({
   },
   eventTag: {
     backgroundColor: COLORS.brightSun,
+    paddingVertical: 2,
     fontFamily: 'Zain',
+    paddingHorizontal: 10,
     borderRadius: 20,
     marginBottom: 20,
     alignSelf: "center",
   },
   eventInfo: {
     fontSize: 14,
-    color: COLORS.indigo,
+    color: "#777",
   },
   label: {
     fontSize: 16,
@@ -264,16 +195,6 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     backgroundColor: "#556ebe",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 20,
-    alignItems: "center",
-    marginTop: 20,
-    width: width * 0.8,
-    alignSelf: "center",
-  },
-  disabledButton: {
-    backgroundColor: "#aaa",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,

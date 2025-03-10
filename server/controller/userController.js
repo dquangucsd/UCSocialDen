@@ -91,7 +91,7 @@ const joinEvent = async (req, res) => {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({ success: false, message: "Event is full" });
-    }    
+    }
 
     user.joinedEvents.push(eventId);
     await user.save({ session });
@@ -110,23 +110,6 @@ const joinEvent = async (req, res) => {
     session.endSession();
     console.error("Transaction failed:", error);
     res.status(500).json({ success: false, message: "Failed to join event" });
-  }
-};
-
-const joinStatus = async (req, res) => {
-  const { eventId } = req.params;
-  const { userId } = req.query; // userId passed as a query parameter
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ joined: false, message: "User not found" });
-    }
-    const joined = user.joinedEvents.includes(eventId);
-    return res.json({ joined });
-  } catch (error) {
-    console.error("Error checking join status:", error);
-    return res.status(500).json({ joined: false, message: "Failed to check event join status" });
   }
 };
 
@@ -283,7 +266,6 @@ module.exports = {
   updateUserIntro,
   uploadImage,
   joinEvent,
-  joinStatus,
   register,
   updateImage,
   //getImageByEmail

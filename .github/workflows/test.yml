@@ -20,6 +20,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
 
       - name: Install dependencies
         run: |
@@ -35,7 +37,7 @@ jobs:
       - name: Create .env file
         run: |
           cd server
-          echo "MONGODB_URI=mongodb://localhost:27017/test_db" > .env
+          echo "MONGODB_URI=${{ secrets.MONGO_URI_TEST }}" > .env
           echo "JWT_SECRET=test_secret_key" >> .env
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env

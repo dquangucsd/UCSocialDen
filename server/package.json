@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --env-file=config.env server",
     "dev": "nodemon --env-file=config.env server.js",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",

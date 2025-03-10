@@ -1,0 +1,117 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoginScreen renders correctly 1`] = `
+<View
+  accessibilityIgnoresInvertColors={true}
+  style={
+    {
+      "backgroundColor": "transparent",
+      "flex": 1,
+    }
+  }
+>
+  <Image
+    resizeMode="cover"
+    source={
+      {
+        "testUri": "../../../assets/images/login.png",
+      }
+    }
+    style={
+      [
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "height": undefined,
+          "width": undefined,
+        },
+        undefined,
+      ]
+    }
+  />
+  <View
+    pointerEvents="none"
+    style={
+      {
+        "backgroundColor": "rgba(0, 0, 0, 0.3)",
+        "height": "100%",
+        "left": 0,
+        "position": "absolute",
+        "top": 0,
+        "width": "100%",
+        "zIndex": 1,
+      }
+    }
+  />
+  <View
+    style={
+      {
+        "flex": 1,
+        "position": "relative",
+        "zIndex": 2,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#556ebe",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+          "padding": 16,
+          "zIndex": 2,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#FFFFFF",
+            "fontFamily": "Zain",
+            "fontSize": 34,
+            "fontWeight": "bold",
+            "zIndex": 2,
+          }
+        }
+      >
+        UC Social Den
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "transparent",
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "white",
+            "fontFamily": "Zain",
+            "fontSize": 50,
+            "fontWeight": "bold",
+            "marginBottom": 30,
+            "marginTop": 200,
+            "zIndex": 2,
+          }
+        }
+      >
+        Welcome to UC Social Den
+      </Text>
+      <ActivityIndicator
+        color="#007AFF"
+        size="large"
+      />
+    </View>
+  </View>
+</View>
+`;

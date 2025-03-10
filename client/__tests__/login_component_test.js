@@ -1,6 +1,6 @@
 import 'react-native';
 import React from 'react';
-import LoginScreen from '../../app/login';
+import LoginScreen from '../app/login';
 import { render } from '@testing-library/react-native';
 
 // Mock AsyncStorage
@@ -11,5 +11,3 @@ describe('LoginScreen', () => {
     expect(toJSON()).toMatchSnapshot();
   });
 });
-
-

@@ -15,5 +15,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "components/__tests__/login_component_test.js"  ]
+, "__tests__/login_component_test.js"  ]
 }

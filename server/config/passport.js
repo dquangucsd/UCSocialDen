@@ -7,7 +7,8 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy; // google st
 const jwt = require("jsonwebtoken"); // jwt is a module that generates and verifies json web tokens. 
                                      // It is used to authenticate users. Use instead of session/cookies
 const User = require("../models/userModel");
-
+const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 /*
     Main function to handle google login. Check database. If user exists, generate token and login. If not, redirect to register.
@@ -18,6 +19,23 @@ const User = require("../models/userModel");
 
 
 // dotenv.config();
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const getSignedUrlFromKey = async (key) => {
+  if (!key) return null;
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+  });
+  return await getSignedUrl(s3, command, { expiresIn: 3600 });
+};
 
 passport.use(
     new GoogleStrategy(
@@ -30,7 +48,7 @@ passport.use(
       // login by google, profile is the google's profile. pops up a window to login with google
         async (accessToken, refreshToken, profile, done) => {
             try {
-                console.log("Google Profile:", profile);
+                //console.log("Google Profile:", profile);
                 
                 const email = profile.emails[0].value;
                 const Name = profile.name; 
@@ -58,11 +76,16 @@ passport.use(
                     return done(null, {newUser: true, token}); // return condition to register to auth.js
                 }
                 
+                // Convert S3 key to URI
+                const userObj = user.toObject();
+                if (userObj.profile_photo) {
+                    userObj.profile_photo = await getSignedUrlFromKey(userObj.profile_photo);
+                }
+                
                 const token = jwt.sign( // here, the email is in our database, then we can generate a token and log the user in
                     { // object aka payload
                         email: user._id,
-                        name: user.name,
-                        image: user.profile_photo
+                        name: user.name
                     },
                     process.env.JWT_SECRET, // secret key, available for 1 hr. if expires, log in again
                     { expiresIn: "1h" }
@@ -76,7 +99,7 @@ passport.use(
                 // create token
                 
     
-                return done(null, { user, token }); // return token and user to auth.js
+                return done(null, { user: userObj, token }); // return token and user to auth.js
             } 
             catch (error) {
                 return done(error, null);

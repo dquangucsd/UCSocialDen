@@ -23,7 +23,7 @@ jobs:
           cd client
           npm install
       
-       - name: Install Backend dependencies
+      - name: Install Backend dependencies
         run: |
           cd server
           npm install

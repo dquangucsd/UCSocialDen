@@ -45,7 +45,7 @@ export default function HomeScreen() {
             method: "GET",
             credentials: "include", 
         });
-        console.log(1);
+        console.log(0);
         if (!response.ok) {
             console.error("Login failed:", response.statusText);
             return;

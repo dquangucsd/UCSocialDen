@@ -22,6 +22,12 @@ jobs:
         run: |
           cd client
           npm install
+      
+      - name: Start Server
+        run: npm start
+
+      - name: Start Client
+        run: npm start
 
       - name: Run Jest tests
         run: npm test

@@ -48,16 +48,6 @@ jobs:
           echo "CALLBACK_URL=http://localhost:5002/auth/google/callback" >> .env
           echo "PORT=5002" >> .env
       
-      - name: Start Server
-        run: |
-          cd server
-          npm start
-
-      - name: Start Client
-        run: |
-          cd client
-          npm start
-
       - name: Run Jest tests
         run: |
           cd client

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {COLORS} from "../utils/constants";
 import jwtDecode from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,9 +38,36 @@ interface EventDetailsProps {
 
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
   // if (!event) return null;
-
+  console.log(event.tags);
   // console.log(event.start);
   const [isJoined, setIsJoined] = useState(false);
+
+  const tagPadding = () => {
+    if (event.tags && event.tags.length > 0) return 5;
+    return 0;
+  };
+
+  useEffect(() => {
+    const fetchJoinStatus = async () => {
+      try {
+        const userString = await AsyncStorage.getItem("user");
+        const user = userString ? JSON.parse(userString) : null;
+        if (user) {
+          const response = await fetch(
+            `http://localhost:${SERVER_PORT}/api/users/${event._id}/join_status?userId=${user.user._id}`
+          );
+          const data = await response.json();
+          setIsJoined(data.joined);
+        }
+      } catch (error) {
+        console.error("Error fetching join status:", error);
+      }
+    };
+  
+    fetchJoinStatus();
+  }, [event._id]);
+  
+
   const handleJoinEvent = async () => {
     // Send a request to join the event
     // If successful, set isJoined to true
@@ -90,8 +117,12 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
             <Text style={styles.title}>{event.name || "Unknown Event"}</Text>
 
             {/* Event Tag */}
-            <View style={styles.eventTag}>
-              <Text style={styles.eventInfo}>{event.tags && event.tags.length > 0 ? event.tags : "Unknown"}</Text>
+            <View>
+              <TouchableOpacity style={[styles.eventTag, {paddingHorizontal: tagPadding()}]} disabled>
+              <Text style={styles.eventInfo}>
+                {event.tags && event.tags.length > 0 ? event.tags : "Unknown"}
+              </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Event Location & Time Info */}
@@ -124,19 +155,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
               <Text>{event.description || "No description available."}</Text>
             </View>
 
-            {/* Joined People Section */}
-            {/* <View style={styles.joinSection}>
-              <Text style={styles.label}>Joined people</Text>
-              <View style={styles.profileContainer}>
-                {joinedPeople.map((person) => (
-                  <Image key={person.id} source={{ uri: person.avatar || "https://via.placeholder.com/50"}} style={styles.profileCircle} />
-                ))}
-              </View>
-            </View> */}
-
             {/* Join Button */}
             <TouchableOpacity 
-                // style={isJoined ? styles.joinButton : styles.disabledButton}
                 style={isJoined ? styles.disabledButton : styles.joinButton}
                 onPress={handleJoinEvent}
                 disabled={isJoined}
@@ -203,16 +223,14 @@ const styles = StyleSheet.create({
   },
   eventTag: {
     backgroundColor: COLORS.brightSun,
-    paddingVertical: 2,
     fontFamily: 'Zain',
-    paddingHorizontal: 10,
     borderRadius: 20,
     marginBottom: 20,
     alignSelf: "center",
   },
   eventInfo: {
     fontSize: 14,
-    color: "#777",
+    color: COLORS.indigo,
   },
   label: {
     fontSize: 16,

@@ -30,6 +30,28 @@ interface EventProps {
     const [isJoined, setIsJoined] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    useEffect(() => {
+      const fetchJoinStatus = async () => {
+        try {
+          const userString = await AsyncStorage.getItem("user");
+          const user = userString ? JSON.parse(userString) : null;
+          if (user) {
+            // Call an API endpoint that returns the join status for this event and user.
+            const response = await fetch(
+              `http://localhost:${SERVER_PORT}/api/users/${event._id}/join_status?userId=${user.user._id}`
+            );
+            const data = await response.json();
+            // Assuming the API returns an object like { joined: true/false }
+            setIsJoined(data.joined);
+          }
+        } catch (error) {
+          console.error("Error fetching join status:", error);
+        }
+      };
+    
+      fetchJoinStatus();
+    }, [event._id]);
+
     const handleJoinEvent = async () => {
       setLoading(true);
       setError(null);
@@ -190,7 +212,7 @@ const styles = StyleSheet.create({
     },
     tagText: {
       fontSize: 12,
-      color: COLORS.alabaster,
+      color: COLORS.indigo,
       fontWeight: 'medium',
       alignSelf: 'center',
     },

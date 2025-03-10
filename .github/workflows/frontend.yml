@@ -27,6 +27,26 @@ jobs:
         run: |
           cd server
           npm install
+
+      - name: Set up MongoDB
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: '6.0'
+          mongodb-port: 27017
+
+      - name: Create .env file
+        run: |
+          cd server
+          echo "MONGODB_URI=mongodb://localhost:27017/test_db" > .env
+          echo "JWT_SECRET=test_secret_key" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "CALLBACK_URL=http://localhost:5002/auth/google/callback" >> .env
+          echo "PORT=5002" >> .env
       
       - name: Start Server
         run: |

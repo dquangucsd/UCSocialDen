@@ -18,16 +18,27 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install dependencies
+      - name: Install Frontend dependencies
         run: |
           cd client
           npm install
       
+       - name: Install Backend dependencies
+        run: |
+          cd server
+          npm install
+      
       - name: Start Server
-        run: npm start
+        run: |
+          cd server
+          npm start
 
       - name: Start Client
-        run: npm start
+        run: |
+          cd client
+          npm start
 
       - name: Run Jest tests
-        run: npm test
+        run: |
+          cd client
+          npm test

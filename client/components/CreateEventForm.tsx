@@ -99,36 +99,36 @@ export default function CreateEventForm(props: CreateEventFormProps) {
     console.log("Creating a new event...");
     if (!validateFormInput()) return
 
-    const createTime = new Date();
-    const startDateTime = new Date(
-      createTime.getFullYear(),
-      +startDate.split("/")[0] - 1,
-      +startDate.split("/")[1],
-      +startTime.split(":")[0],
-      +startTime.split(":")[1]
-    );
+        const createTime = new Date();
+        const startDateTime = new Date(
+        createTime.getFullYear(),
+        +startDate.split("/")[0] - 1,
+        +startDate.split("/")[1],
+        +startTime.split(":")[0],
+        +startTime.split(":")[1]
+        );
 
-    const endDateTime = new Date(
-      createTime.getFullYear(),
-      +endDate.split("/")[0] - 1,
-      +endDate.split("/")[1],
-      +endTime.split(":")[0],
-      +endTime.split(":")[1]
-    );
+        const endDateTime = new Date(
+        createTime.getFullYear(),
+        +endDate.split("/")[0] - 1,
+        +endDate.split("/")[1],
+        +endTime.split(":")[0],
+        +endTime.split(":")[1]
+        );
 
-    const event = {
-      name: name,
-      create_time: createTime,
-      start_time: startDateTime,
-      end_time: endDateTime,
-      location: location,
-      description: description,
-      participants: [],
-      author: "",
-      event_image: "",
-      tags: selectedTag,
-      participant_limit: +participantLimit
-    };
+        const event = {
+        name: name,
+        create_time: createTime,
+        start_time: startDateTime,
+        end_time: endDateTime,
+        location: location,
+        description: description,
+        participants: [],
+        author: "",
+        event_image: "",
+        tags: selectedTag,
+        participant_limit: +participantLimit
+        };
 
     const token = await AsyncStorage.getItem("jwt");
     if (!token) {

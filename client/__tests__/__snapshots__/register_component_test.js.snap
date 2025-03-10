@@ -1,94 +1,130 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LoginScreen renders correctly 1`] = `
+exports[`RegisterScreen renders correctly 1`] = `
 <View
-  accessibilityIgnoresInvertColors={true}
   style={
     {
-      "backgroundColor": "transparent",
+      "backgroundColor": "#fafafa",
       "flex": 1,
     }
   }
 >
-  <Image
-    resizeMode="cover"
-    source={
-      {
-        "testUri": "../../../assets/images/login.png",
-      }
-    }
-    style={
-      [
-        {
-          "bottom": 0,
-          "left": 0,
-          "position": "absolute",
-          "right": 0,
-          "top": 0,
-        },
-        {
-          "height": undefined,
-          "width": undefined,
-        },
-        undefined,
-      ]
-    }
-  />
-  <View
-    pointerEvents="none"
-    style={
-      {
-        "backgroundColor": "rgba(0, 0, 0, 0.3)",
-        "height": "100%",
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": "100%",
-        "zIndex": 1,
-      }
-    }
-  />
   <View
     style={
       {
-        "flex": 1,
-        "position": "relative",
-        "zIndex": 2,
+        "alignItems": "center",
+        "backgroundColor": "#556ebe",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "padding": 16,
       }
     }
   >
-    <View
+    <Text
       style={
         {
-          "alignItems": "center",
-          "backgroundColor": "#556ebe",
-          "flexDirection": "row",
-          "justifyContent": "space-between",
-          "padding": 16,
-          "zIndex": 2,
+          "color": "#FFFFFF",
+          "fontFamily": "Zain",
+          "fontSize": 34,
+          "fontWeight": "bold",
         }
       }
     >
-      <Text
-        style={
-          {
-            "color": "#FFFFFF",
-            "fontFamily": "Zain",
-            "fontSize": 34,
-            "fontWeight": "bold",
-            "zIndex": 2,
-          }
-        }
-      >
-        UC Social Den
-      </Text>
-    </View>
-    <View
+      UC Social Den
+    </Text>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#fafafa",
+        "flex": 1,
+      }
+    }
+  >
+    <Text
       style={
         {
-          "alignItems": "center",
-          "backgroundColor": "transparent",
-          "flex": 1,
+          "color": "#556ebe",
+          "fontFamily": "Zain",
+          "fontSize": 32,
+          "fontWeight": "bold",
+          "marginBottom": 30,
+          "marginTop": 100,
+        }
+      }
+    >
+      Create an Account
+    </Text>
+    <TextInput
+      onChangeText={[Function]}
+      placeholder="Major"
+      style={
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#556ebe",
+          "borderRadius": 5,
+          "borderWidth": 1,
+          "marginBottom": 15,
+          "padding": 10,
+          "width": "80%",
+        }
+      }
+      value=""
+    />
+    <TextInput
+      multiline={true}
+      onChangeText={[Function]}
+      placeholder="Bio (Optional)"
+      style={
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#556ebe",
+          "borderRadius": 5,
+          "borderWidth": 1,
+          "marginBottom": 15,
+          "padding": 10,
+          "width": "80%",
+        }
+      }
+      value=""
+    />
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "backgroundColor": "#4285F4",
+          "borderRadius": 5,
+          "marginBottom": 15,
+          "opacity": 1,
+          "paddingHorizontal": 20,
+          "paddingVertical": 10,
         }
       }
     >
@@ -96,21 +132,63 @@ exports[`LoginScreen renders correctly 1`] = `
         style={
           {
             "color": "white",
-            "fontFamily": "Zain",
-            "fontSize": 50,
+            "fontSize": 16,
             "fontWeight": "bold",
-            "marginBottom": 30,
-            "marginTop": 200,
-            "zIndex": 2,
           }
         }
       >
-        Welcome to UC Social Den
+        Upload Profile Photo
       </Text>
-      <ActivityIndicator
-        color="#007AFF"
-        size="large"
-      />
+    </View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "backgroundColor": "#4285F4",
+          "borderRadius": 5,
+          "opacity": 1,
+          "paddingHorizontal": 20,
+          "paddingVertical": 10,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "white",
+            "fontSize": 16,
+            "fontWeight": "bold",
+          }
+        }
+      >
+        Register
+      </Text>
     </View>
   </View>
 </View>

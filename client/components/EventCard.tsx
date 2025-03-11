@@ -1,32 +1,96 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { Colors } from '../constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons'; // or 'react-native-vector-icons/MaterialIcons'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
+const SERVER_PORT = 5002;
 const { width, height } = Dimensions.get("window");
 
 interface EventProps {
     event: {
-      id: string;
+      _id: string;
       name: string;
       tags: string;
       start_time: string;
       end_time: string;
       location: string;
       description: string;
-      image?: string;
       participants: string[];
       participant_limit: number;
     };
   }
+
   
   const EventCard: React.FC<EventProps> = ({ event }) => {
+    const router = useRouter();
+    const [isJoined, setIsJoined] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    useEffect(() => {
+      const fetchJoinStatus = async () => {
+        try {
+          const userString = await AsyncStorage.getItem("user");
+          const user = userString ? JSON.parse(userString) : null;
+          if (user) {
+            // Call an API endpoint that returns the join status for this event and user.
+            const response = await fetch(
+              `http://localhost:${SERVER_PORT}/api/users/${event._id}/join_status?userId=${user.user._id}`
+            );
+            const data = await response.json();
+            // Assuming the API returns an object like { joined: true/false }
+            setIsJoined(data.joined);
+          }
+        } catch (error) {
+          console.error("Error fetching join status:", error);
+        }
+      };
+    
+      fetchJoinStatus();
+    }, [event._id]);
+
+    const handleJoinEvent = async () => {
+      setLoading(true);
+      setError(null);
+      // Send a request to join the event
+      // If successful, set isJoined to true
+      try {
+        const userString = await AsyncStorage.getItem("user");
+        console.log(userString);
+        const user = userString ? JSON.parse(userString) : null;
+        if (!user) {
+          console.error("No user found");
+          alert("Please log in to join the event."); // DELETE THIS LINE?
+          throw new Error("No user found");
+          return;
+        }
+  
+
+        const response = await fetch(`http://localhost:${SERVER_PORT}/api/users/${event._id}/join`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.user._id })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data["message"]);
+        }
+        
+        setIsJoined(true);
+        alert("You have joined the event!"); // DELETE THIS LINE
+      } catch (error) {
+        console.error("Failed to join event:", error);
+        alert("Failed to join event. Please try again."); // DELETE THIS LINE
+      }
+    };
 
     return (
         
-      <View key={event.id} style={styles.eventCard}>
+      <View key={event._id} style={styles.eventCard}>
         <View style={styles.eventHeader}>
           {/* Event Title */}
           <View>
@@ -68,15 +132,14 @@ interface EventProps {
           </Text>
         </View>
         
-        {/* <Text style={styles.eventDescription}>{event.description}</Text> */}
-        {event.image && (
-          <Image source={{ uri: event.image }} style={styles.eventImage} />
-        )}
-
         <View style={styles.joinInfo}>
           <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
-          <TouchableOpacity style={styles.joinButton} >
-                  <Text style={styles.joinText}>Join</Text>
+          <TouchableOpacity
+            style={isJoined ? styles.disabledButton : styles.joinButton}
+            onPress={handleJoinEvent}
+            disabled={isJoined} 
+          >
+            <Text style={styles.joinText}>{isJoined ? "Joined" : "Join"}</Text>
           </TouchableOpacity>
         </View>
 
@@ -132,9 +195,18 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginBottom: 4,
     },
+    disabledButton: {
+      alignSelf:'flex-end',
+      backgroundColor: "#aaa",
+      paddingVertical: 5,
+      fontFamily: 'Zain',
+      paddingHorizontal: 15,
+      borderRadius: 20,
+      marginBottom: 4,
+    },
     tagText: {
       fontSize: 12,
-      color: COLORS.alabaster,
+      color: COLORS.indigo,
       fontWeight: 'medium',
       alignSelf: 'center',
     },
@@ -169,12 +241,6 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: COLORS.indigo,
       marginTop: 10,
-    },
-    eventImage: {
-      width: '100%',
-      height: 150,
-      borderRadius: 4,
-      marginVertical: 8,
     },
   });
     

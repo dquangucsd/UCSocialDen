@@ -15,34 +15,34 @@ const s3 = new S3Client({
 });
 
 
-// get all users
-const getUsers = async (req, res) => {
-  try {
-    const users = await User.find({}, "-password"); 
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch users" });
-  }
-};
+// // get all users
+// const getUsers = async (req, res) => {
+//   try {
+//     const users = await User.find({}); 
+//     res.json(users);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to fetch users" });
+//   }
+// };
 
-const getImageByEmail = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.email, "-password");
-    if (!user) {
-      return {success: false, message: 'User not found'};
-    }
-    res.status(200).json(user.profile_photo);
-  }
-  catch (error) {
-    res.status(500).json({ error: "Failed to fetch users" });
-  }
-}
+// const getImageByEmail = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.email);
+//     if (!user) {
+//       return {success: false, message: 'User not found'};
+//     }
+//     res.status(200).json(user.profile_photo);
+//   }
+//   catch (error) {
+//     res.status(500).json({ error: "Failed to fetch users" });
+//   }
+// }
 
 const getUserByEmail = async (req, res) => {
   try {
-    const user = await User.findById(req.params.email, "-password"); //find user by email, from :email from frontend input
+    const user = await User.findById(req.params.email); //find user by email, from :email from frontend input
     if (!user) {
-      return {success: false, message: 'User not found'};
+      return res.status(404).json({ success: false, message: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -60,7 +60,6 @@ const joinEvent = async (req, res) => {
 
     const user = await User.findById(email).session(session);
     const event = await Event.findById(eventId).session(session);
-
     if (!user || !event) {
       await session.abortTransaction();
       session.endSession();
@@ -72,12 +71,12 @@ const joinEvent = async (req, res) => {
       session.endSession();
       return res.status(400).json({ success: false, message: "User already joined this event" });
     }
-
-    if (event.participant_limit > 0 && event.cur_joined >= event.participant_limit) {
+    
+    if (event.participant_limit >= 0 && event.cur_joined >= event.participant_limit) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(400).json({ success: false, message: "Event is full" });
-    }
+      return res.status(400).json({ success: false, message: `Event is full.` });
+    }    
 
     user.joinedEvents.push(eventId);
     await user.save({ session });
@@ -99,6 +98,23 @@ const joinEvent = async (req, res) => {
   }
 };
 
+const joinStatus = async (req, res) => {
+  const { eventId } = req.params;
+  const { userId } = req.query; // userId passed as a query parameter
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ joined: false, message: "User not found" });
+    }
+    const joined = user.joinedEvents.includes(eventId);
+    return res.json({ joined });
+  } catch (error) {
+    console.error("Error checking join status:", error);
+    return res.status(500).json({ joined: false, message: "Failed to check event join status" });
+  }
+};
+
 const updateUserIntro = async (req, res) => {
   try {
     const { email } = req.params;
@@ -106,7 +122,7 @@ const updateUserIntro = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       email, //search for use by email
       { intro, major }, // update intro value
-      { new: true, select: "-password" } //return updated user except password
+      { new: true } //return updated user except password
     );
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: "Update Intro User not found" });
@@ -158,10 +174,27 @@ const updateImage = async (req, res) => {
       profile_photo = uploadResponse;
     }
 
+    const user = await User.findById(email);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.profile_photo) {
+      const oldKey = user.profile_photo.split(".com/")[1];
+      try {
+        await s3.send(new DeleteObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: oldKey,
+        }));
+      } catch (deleteError) {
+        console.error("Failed to delete old image:", deleteError);
+      }
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       email,
       { profile_photo },
-      { new: true, select: "-password" } //return updated user except password
+      { new: true} //return updated user except password
     );
     
     console.log("updated user:", updatedUser);
@@ -206,7 +239,7 @@ const register = async (req, res) => {
       email,
       name,
       major,
-      bio,
+      intro: bio,
       profile_photo: profilePhoto,
     });
 
@@ -223,12 +256,13 @@ const register = async (req, res) => {
 
 
 module.exports = {
-  getUsers,
+  //getUsers,
   getUserByEmail,
   updateUserIntro,
   uploadImage,
   joinEvent,
+  joinStatus,
   register,
   updateImage,
-  getImageByEmail
+  //getImageByEmail
 };

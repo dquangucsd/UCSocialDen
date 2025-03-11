@@ -8,7 +8,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Dimensions,
   ScrollView,
   Modal,
@@ -25,13 +24,7 @@ interface EventDetailsProps {
     end_time: string;
     location: string;
     description: string;
-    participants: string[];
-    author: string;
-    image?: string;
     tags: string;
-    current_joined: number;
-    participant_limit: number;
-    version: number;
   }; // Ensure it receives correct event data
   onClose: () => void;
 }
@@ -145,11 +138,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onClose }) => {
               <Text style={styles.eventInfo}>Location: {event.location || "Unknown Location"}</Text>
             </View>
 
-            {/* Event Image */}
-            {event.image && (
-              <Image source={{ uri: event.image }} style={styles.eventImage} />
-            )}
-
             {/* Description Box */}
             <View style={styles.descriptionBox}>
               <Text>{event.description || "No description available."}</Text>
@@ -209,12 +197,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
-  },
-  eventImage: {
-    width: width * 0.9,
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
   },
   locationTimeContainer: {
     justifyContent: "space-between",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, Modal, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { COLORS } from '../utils/constants';
 import { Colors } from '../constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons'; // or 'react-native-vector-icons/MaterialIcons'
@@ -18,7 +18,6 @@ interface EventProps {
       end_time: string;
       location: string;
       description: string;
-      image?: string;
       participants: string[];
       participant_limit: number;
     };
@@ -133,11 +132,6 @@ interface EventProps {
           </Text>
         </View>
         
-        {/* <Text style={styles.eventDescription}>{event.description}</Text> */}
-        {event.image && (
-          <Image source={{ uri: event.image }} style={styles.eventImage} />
-        )}
-
         <View style={styles.joinInfo}>
           <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
           <TouchableOpacity
@@ -247,12 +241,6 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: COLORS.indigo,
       marginTop: 10,
-    },
-    eventImage: {
-      width: '100%',
-      height: 150,
-      borderRadius: 4,
-      marginVertical: 8,
     },
   });
     

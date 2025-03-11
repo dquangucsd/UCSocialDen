@@ -52,7 +52,7 @@ const getUserByEmail = async (req, res) => {
   try {
     const user = await User.findById(req.params.email); //find user by email, from :email from frontend input
     if (!user) {
-      return {success: false, message: 'User not found'};
+      return res.status(404).json({ success: false, message: "User not found" });
     }
     const signedUrl = await getSignedUrlFromKey(user.profile_photo);
     const userResponse = user.toObject();

@@ -73,7 +73,7 @@ const joinEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already joined this event" });
     }
 
-    if (event.participant_limit > 0 && event.cur_joined >= event.participant_limit) {
+    if (event.participant_limit >= 0 && event.cur_joined >= event.participant_limit) {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({ success: false, message: "Event is full" });

@@ -183,12 +183,12 @@ export default function CreateEventForm(props: CreateEventFormProps) {
           </View>
           <View style={styles.occupancyContainer}>
             <Text style={styles.occupancy}>
-              0 /
+              
             </Text>
             <TextInput
               style={styles.occupancy}
               inputMode="numeric"
-              placeholder="000"
+              placeholder="00"
               placeholderTextColor="rgba(0, 0, 0, 0.5)"
               value={participantLimit}
               onChangeText={setParticipantLimit}
@@ -197,6 +197,7 @@ export default function CreateEventForm(props: CreateEventFormProps) {
               style={styles.personIcon}
               source={require("../assets/images/person-icon.png")}
             />
+            #Guests
           </View>
         </View>
         {!(inputErrors.isStartDateTimeValid && inputErrors.isEndDateTimeValid) && (
@@ -398,7 +399,7 @@ const stylesMobile = StyleSheet.create({
   occupancy: {
     fontSize: 24,
     fontFamily: "'Zain', sans-serif",
-    width: 50,
+    width: 0,
   },
   personIcon: {
     height: 25,

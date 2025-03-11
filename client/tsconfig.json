@@ -14,6 +14,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "__tests__/event_details_join_test.js",
+    "__tests__/event_card_join_test.js"
   ]
 }

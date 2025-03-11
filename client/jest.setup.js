@@ -4,6 +4,7 @@ jest.mock('expo-router', () => ({
       replace: jest.fn(),
       push: jest.fn(),
       back: jest.fn(),
+      
   })),
   usePathname: jest.fn(() => '/'),
   useSegments: jest.fn(() => []),

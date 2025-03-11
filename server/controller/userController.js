@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const { S3Client, PutObjectCommand , DeleteObjectCommand} = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand , DeleteObjectCommand, GetObjectCommand} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const User = require("../models/userModel");
 const Event = require("../models/eventModel");
 
@@ -38,13 +39,26 @@ const s3 = new S3Client({
 //   }
 // }
 
+const getSignedUrlFromKey = async (key) => {
+  if (!key) return null;
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+  });
+  return await getSignedUrl(s3, command, { expiresIn: 3600 });
+};
+
 const getUserByEmail = async (req, res) => {
   try {
     const user = await User.findById(req.params.email); //find user by email, from :email from frontend input
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    res.status(200).json(user);
+    const signedUrl = await getSignedUrlFromKey(user.profile_photo);
+    const userResponse = user.toObject();
+    userResponse.profile_photo = signedUrl;
+    console.log(userResponse);
+    res.status(200).json(userResponse);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
   }
@@ -73,11 +87,11 @@ const joinEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already joined this event" });
     }
 
-    if (event.participant_limit >= 0 && event.cur_joined >= event.participant_limit) {
+    if (event.participant_limit > 0 && event.cur_joined >= event.participant_limit) {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({ success: false, message: "Event is full" });
-    }    
+    }
 
     user.joinedEvents.push(eventId);
     await user.save({ session });
@@ -152,8 +166,8 @@ const uploadImage = async (file) => {
     };
 
     await s3.send(new PutObjectCommand(uploadParams));
-    const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-    return s3Url;
+    //const s3Url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    return fileName;
   } catch (error) {
     console.error("Image upload failed:", error);
     return null;
@@ -168,7 +182,7 @@ const updateImage = async (req, res) => {
     // get image uri.
     if (req.file) {
       const uploadResponse = await uploadImage(req.file);
-      console.log("profile photo aws uri:", uploadResponse);
+      //console.log("profile photo aws uri:", uploadResponse);
       if (!uploadResponse) {
         return res.status(500).json({ success: false, message: "Profile photo upload failed." });
       }
@@ -181,11 +195,12 @@ const updateImage = async (req, res) => {
     }
 
     if (user.profile_photo) {
-      const oldKey = user.profile_photo.split(".com/")[1];
+
+      //const oldKey = user.profile_photo.split(".com/")[1];
       try {
         await s3.send(new DeleteObjectCommand({
           Bucket: process.env.AWS_BUCKET_NAME,
-          Key: oldKey,
+          Key: user.profile_photo,
         }));
       } catch (deleteError) {
         console.error("Failed to delete old image:", deleteError);
@@ -203,7 +218,10 @@ const updateImage = async (req, res) => {
       return res.status(404).json({ success: false, message: "Update profile photo: User not found" });
     }
     // console.log(updatedUser);
-    res.status(200).json({success: true, user: updatedUser});
+    const signedUrl = await getSignedUrlFromKey(profile_photo);
+    const userResponse = updatedUser.toObject();
+    userResponse.profile_photo = signedUrl;
+    res.status(200).json({success: true, user: userResponse});
   } catch (error) {
     console.error("Profile Photo Update failed:", error);
     return res.status(500).json({ success: false, message: "Profile photo update failed." });
@@ -228,7 +246,7 @@ const register = async (req, res) => {
     // get image uri.
     if (req.file) {
       const uploadResponse = await uploadImage(req.file);
-      console.log(uploadResponse);
+      //console.log(uploadResponse);
       if (!uploadResponse) {
         return res.status(500).json({ success: false, message: "Profile photo upload failed." });
       }
@@ -245,8 +263,11 @@ const register = async (req, res) => {
     });
 
     await user.save();
-    
-    res.status(201).json({ success: true, message: "User registered successfully", user });
+    const signedUrl = await getSignedUrlFromKey(profilePhoto);
+    const userResponse = user.toObject();
+    userResponse.profile_photo = signedUrl;
+
+    res.status(201).json({ success: true, message: "User registered successfully", userResponse });
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ success: false, message: "Failed to register user" });
@@ -262,8 +283,8 @@ module.exports = {
   updateUserIntro,
   uploadImage,
   joinEvent,
-  joinStatus,
   register,
   updateImage,
+  joinStatus
   //getImageByEmail
 };

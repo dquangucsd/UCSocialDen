@@ -254,11 +254,6 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           {selectedFilter === "Filter" && showTags && (
-            <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            style={{paddingBottom: getPadding() * 2}}
-            >
               <View style={[styles.tagContainer, { gap: getPadding() }]}>
                 {TAGS.map((tag) => (
                   <TouchableOpacity 
@@ -274,7 +269,6 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-            </ScrollView>
           )}
           {/* event list */}
           <ScrollView>

@@ -133,7 +133,7 @@ interface EventProps {
         </View>
         
         <View style={styles.joinInfo}>
-          <Text style={styles.eventLimit}>{event.participants.length} / {event.participant_limit}</Text>
+          <Text style={styles.eventLimit}>{event.participants.length +1 } / {event.participant_limit+1}</Text>
           <TouchableOpacity
             style={isJoined ? styles.disabledButton : styles.joinButton}
             onPress={handleJoinEvent}

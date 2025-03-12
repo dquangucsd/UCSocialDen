@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --runInBand --forceExit --verbose",
+    "test": "jest --runInBand --detectOpenHandles --forceExit --verbose -u",
     "lint": "expo lint"
   },
   "jest": {
